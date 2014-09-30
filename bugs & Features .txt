@@ -1,0 +1,19 @@
+
+Bugs:
+- abbrechen bei datenbank laden crasht flacshlonz  
+- Statusbalken wird ständig aktualisiert bei der Platzanzeige
+- nach löschen von database.db3 zeigt er erst nach abermaligen start neue files an (Muss ich nochmal verifzieren)
+- database file wird größer aber nie kleiner
+- FlacShlonz.exe (aktuell qtFlacSchlonz.exe)
+
+Features:
+- Meldung das nix anzuzeigen ist in einer gewählten Filteransicht sollte in der Ergebisliste stehen, nicht als popup fenster
+- Wenn kein incoming angegeben wurde Meldung "Please select incoming directory" in der Ergebisliste
+- hypnotoad video während indizierung, aktivierbar über settings (10sek im loop oder so)
+- Rescan button für "Music Collection"
+- Überschrift für mittleres Feld "Information of selected file"
+- Export database Funktion: "Save Database as..."
+- Wenn Datenbank aus File geladen nur Anzeige von "Copy to" im Ergebniskontext-Menü, import macht ja in diesem Fall kein Sinn
+- Verzeichnisstruktur so umbauen das außer der .exe, dem Datenbankfile und der ini nix im Hauptverzeichnis ist. 
+
+
