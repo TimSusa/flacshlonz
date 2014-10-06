@@ -1888,7 +1888,7 @@ void MainWindow::startPlayer()
     {
         m_Player->setWindowFlags(Qt::WindowStaysOnTopHint);
         QStringList playlist;
-        playlist << "Hypno.mp4" << "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4";
+        playlist << ":/Hypno.mp4" << ":/Hypno.mp4" <<  ":/Hypno.mp4" <<  ":/Hypno.mp4" <<  ":/Hypno.mp4" <<  ":/Hypno.mp4";
         if ( states::MAINSTATE_DB_IMPORT == m_MainState )
             emit m_Player->slotSetStatusInfo("Database Import...");
         else

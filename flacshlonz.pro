@@ -7,30 +7,31 @@
 #//! $Date: 2013-05-28 15:48:51 +0200 (Tue, 28 May 2013) $
 #//! $Revision: 239220 $
 #//////////////////////////////////////////////////////////////////////
+# Requirements:
+# - FLAC 1.3
+# - QT 5.2.1
+# WIN32: Please configure absolute paths on your own!
 
-QT       += core gui sql widgets
-QT += network \
-      xml \
-      multimedia \
-      multimediawidgets
+QT +=   core \
+        gui \
+        sql \
+        widgets \
+        network \
+        xml \
+        multimedia \
+        multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += mobility
-MOBILITY += systeminfo
-
 TEMPLATE = app
 TARGET = FlacShlonz
+
 win32: DEFINES += UTF8
 win32: DEFINES -= UNICODE
-#DEFINES += FLAC__NO_DLL
-#DEFINES += QT_NO_CAST_FROM_ASCII \
-#           QT_NO_CAST_TO_ASCII
 
 #DEPENDPATH += .
 
-
-# Input
+# SOURCE FILES
 HEADERS += \
     MainWindow.hpp \
     FileSystemManager.hpp \
@@ -82,21 +83,45 @@ SOURCES += \
     player/VideoWidget.cpp \
     StateButton.cpp
 
-
+# RESOURCES
 RESOURCES += flacshlonz.qrc
 
-#win32: INCLUDEPATH += "C:\\_SUSATA\\_CODING\\CPP\\flac-1.3.0\\include\\share"
-#win32: INCLUDEPATH += "C:\\_SUSATA\\_CODING\\CPP\\FLAC\\include"
-win32: INCLUDEPATH += "C:\\_SUSATA\\_CODING\\CPP\\flac-1.3.0\\include" \
- "_SUSATA/_CODING/CPP/qtFlacschlonz/"
-win32: LIBS += -llibFLAC++_dynamic -llibFLAC_dynamic
-#win32: LIBS += -llibFLAC++ -llibFLAC
+# LIBRARIES
 unix: LIBS += -lFLAC++
-#win32: LIBS += -L"C:\\_SUSATA\\_CODING\\CPP\\FLAC\\lib\\libFLAC++"
-win32: LIBS += -L"C:\\_SUSATA\\_CODING\\CPP\\flac-1.3.0\\objs\\release\\lib"
 
+win32
+{
+    INCLUDEPATH += "C:\\_SUSATA\\_CODING\\CPP\\flac-1.3.0\\include" \
+                      "_SUSATA/_CODING/CPP/qtFlacschlonz/"
 
-win32: DESTDIR += "C:\\tmpFlacdeploy"
-#win32: DESTDIR += "C:\\_SUSATA\\_CODING\\CPP\\flac-1.3.0\\objs\\release\\lib"
-#win32: DESTDIR += "C:\\_SUSATA\\_CODING\\CPP\\build-flacshlonz-Desktop_Qt_5_2_1_MSVC2010_32bit-release\\release"
-#choose visual studio compiler build path
+    LIBS += -llibFLAC++_dynamic -llibFLAC_dynamic
+    # LIBS += -llibFLAC++ -llibFLAC
+
+    FLAC_LIB_DIR = "C:\\_SUSATA\\_CODING\\CPP\\flac-1.3.0\\objs\\release\\lib"
+    LIBS += -L$${FLAC_LIB_DIR}
+    DESTDIR += "C:\\tmpFlac"
+
+    # Copy all flac- libs to destination dir.
+    QMAKE_POST_LINK = copy $${FLAC_LIB_DIR}\*.dll $${DESTDIR}
+}
+
+# Misc Files.
+#OTHER_FILES += \
+#    libFLAC++_dynamic.dll \
+#    libFLAC_dynamic.dll
+#Hypno.mp4
+
+# Copy OTHER_FILES to DESTDIR.
+#win32 {
+#    DESTDIR_WIN = $${DESTDIR}
+#    DESTDIR_WIN ~= s,/,\\,g
+#    PWD_WIN = $${FLAC_LIB_DIR}#$${PWD} # PWD is where the source files lie.
+#    PWD_WIN ~= s,/,\\,g
+#    for(FILE, OTHER_FILES){
+#        QMAKE_POST_LINK += $$quote(cmd /c copy /y $${PWD_WIN}\\$${FILE} $${DESTDIR_WIN}$$escape_expand(\\n\\t))
+#    }
+#}
+#unix {
+#    for(FILE, OTHER_FILES){
+#        QMAKE_POST_LINK += $$quote(cp $${PWD}/$${FILE} $${DESTDIR}$$escape_expand(\\n\\t))
+#}
