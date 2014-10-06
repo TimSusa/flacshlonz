@@ -52,7 +52,7 @@ void FlacMetadataManager::initMetaDataHashSet()
     m_LUT[ m_LabelHasCueSheet ] = m_metadataKeys.indexOf( m_LabelHasCueSheet );
     m_LUT[ m_LabelVorbisComments ] = m_metadataKeys.indexOf( m_LabelVorbisComments );
     m_LUT[ m_LabelNrOfSeekPoints ] = m_metadataKeys.indexOf( m_LabelNrOfSeekPoints );
-    m_LUT[ m_LabelSeekpoints ] = m_metadataKeys.indexOf( m_LabelSeekpoints );
+    //m_LUT[ m_LabelSeekpoints ] = m_metadataKeys.indexOf( m_LabelSeekpoints );
 
 }
 
@@ -183,10 +183,12 @@ void FlacMetadataManager::calcFlacMetaData()
                             << appData
                             << ")";
                 }
+                /*
                 else if( blockType == ::FLAC__METADATA_TYPE_SEEKTABLE )
                 {
                     setSeekTable(block);
                 }
+                */
                 else if( blockType == ::FLAC__METADATA_TYPE_VORBIS_COMMENT )
                 {
                     setVorbisComments(block);
@@ -281,7 +283,7 @@ void FlacMetadataManager::setStreamInfo(FLAC::Metadata::Prototype *block)
     m_MetaDataValues[ m_LUT[ m_LabelFrameSizeMin ] ] = QString::number( streaminfo->get_min_framesize() );
     m_MetaDataValues[ m_LUT[ m_LabelFrameSizeMax ] ] = QString::number( streaminfo->get_max_framesize() );
 }
-
+/*
 void FlacMetadataManager::setSeekTable(FLAC::Metadata::Prototype *block)
 {
     //  qDebug() << "FLAC__METADATA_TYPE_SEEKTABLE" << "\n";
@@ -308,7 +310,7 @@ void FlacMetadataManager::setSeekTable(FLAC::Metadata::Prototype *block)
     }
     m_MetaDataValues[ m_LUT[ m_LabelSeekpoints ] ].chop( 1 );
 }
-
+*/
 void FlacMetadataManager::setVorbisComments(FLAC::Metadata::Prototype *block)
 {
     // qDebug() << "FLAC__METADATA_TYPE_VORBIS_COMMENT";

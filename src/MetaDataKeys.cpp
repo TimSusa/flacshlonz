@@ -23,9 +23,9 @@ MetaDataKeys::MetaDataKeys():
     m_LabelHasPicture( "Has picture" ),
     m_LabelHasCueSheet( "Has CUE sheet" ),
     m_LabelVorbisComments( "Vorbis Comments" ),
-    m_LabelNrOfSeekPoints( "Number of seekpoints" ),
+    m_LabelNrOfSeekPoints( "Number of seekpoints" )
     // 	m_seekpointsHdrLabel( "Seekpoints ( sample number/stream offset/frame samples)" )
-    m_LabelSeekpoints( "Seekpoints" )
+   // m_LabelSeekpoints( "Seekpoints" )
 {
     m_metadataKeys
             << m_LabelFileName
@@ -43,6 +43,6 @@ MetaDataKeys::MetaDataKeys():
             << m_LabelHasPicture
             << m_LabelHasCueSheet
             << m_LabelVorbisComments
-            << m_LabelNrOfSeekPoints
-            << m_LabelSeekpoints;
+            << m_LabelNrOfSeekPoints;
+           // << m_LabelSeekpoints;
 }

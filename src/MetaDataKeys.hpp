@@ -33,7 +33,7 @@ public:
     QString m_LabelHasCueSheet;
     QString m_LabelVorbisComments;
     QString m_LabelNrOfSeekPoints;
-    QString m_LabelSeekpoints;
+    //QString m_LabelSeekpoints;
 };
 
 #endif // METADATAKEYS_HPP
