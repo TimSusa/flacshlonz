@@ -17,12 +17,12 @@ public:
     ConfigPageAlgorithm(QWidget *parent = 0);
 
 signals:
-    void sigEnableDeepScan(bool isChecked);
-    void sigEnableQuickScan(bool isChecked);
+   // void sigEnableDeepScan(bool isChecked);
+   // void sigEnableQuickScan(bool isChecked);
 
 public slots:
-    void slotEnableDeepScan(bool isChecked);
-    void slotEnableQuickScan(bool isChecked);
+   // void slotEnableDeepScan(bool isChecked);
+   // void slotEnableQuickScan(bool isChecked);
 
 private:
     Persistence m_Persistence;

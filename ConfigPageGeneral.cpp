@@ -27,19 +27,20 @@ ConfigPageGeneral::ConfigPageGeneral(QWidget *parent)
     QCheckBox *checkBoxEnableWizard = new QCheckBox(tr("Enable Wizard, which leads you to app."));
     checkBoxEnableWizard->setChecked(m_Persistence.getEnableWizard());
     QObject::connect(checkBoxEnableWizard, SIGNAL(clicked(bool)), this, SLOT(slotEnableWizard(bool)));
-
+/*
     QCheckBox *checkBoxDbTo = new QCheckBox(tr("Database import to collection (If unchecked, import to file-incoming)."));
     checkBoxDbTo->setChecked(m_Persistence.getEnableDbImportTo());
     QObject::connect(checkBoxDbTo, SIGNAL(clicked(bool)), this, SLOT(slotEnableDbImportTo(bool)));
-
-    QCheckBox *checkBoxHypnoad = new QCheckBox(tr("Show Hypnoad on progress."));
-    checkBoxHypnoad->setChecked(m_Persistence.getEnableHypnoad());
-    QObject::connect(checkBoxHypnoad, SIGNAL(clicked(bool)), this, SLOT(slotEnableHypnoAd(bool)));
+*/
+    QCheckBox *checkBoxHypnotoad = new QCheckBox(tr("Show Hypnotoad on progress."));
+    checkBoxHypnotoad->setChecked(m_Persistence.getEnableHypnotoad());
+    QObject::connect(checkBoxHypnotoad, SIGNAL(clicked(bool)), this, SLOT(slotEnableHypnotoad(bool)));
 
     QVBoxLayout *mainSettingsLayout = new QVBoxLayout;
     mainSettingsLayout->addWidget(rememberLastOpenFileCheckBox);
     mainSettingsLayout->addWidget(checkBoxEnableWizard);
-    mainSettingsLayout->addWidget(checkBoxDbTo);
+  //  mainSettingsLayout->addWidget(checkBoxDbTo);
+    mainSettingsLayout->addWidget(checkBoxHypnotoad);
     generalSettingsGroup->setLayout(mainSettingsLayout);
 
     QGroupBox *configConnectionGroup = new QGroupBox(tr("Connection settings"));
@@ -81,19 +82,19 @@ void ConfigPageGeneral::slotEnableWizard(bool enabled)
     m_Persistence.persistEnableWizard(enabled);
     emit sigEnableWizard(enabled);
 }
-
+/*
 void ConfigPageGeneral::slotEnableDbImportTo(bool enabled)
 {
     qDebug() << "ConfigPageGeneral::slotEnableDbQueryBox";
     m_Persistence.persistEnableDbImportTo(enabled);
     emit sigEnableDbImportTo(enabled);
 }
-
-void ConfigPageGeneral::slotEnableHypnoAd(bool enabled)
+*/
+void ConfigPageGeneral::slotEnableHypnotoad(bool enabled)
 {
     qDebug() << "ConfigPageGeneral::slotEnableHypnoAd" << enabled;
-    m_Persistence.persistEnableHypnoad(enabled);
-    emit sigEnableHypnoad(enabled);
+    m_Persistence.persistEnableHypnotoad(enabled);
+    emit sigEnableHypnotoad(enabled);
 }
 
 

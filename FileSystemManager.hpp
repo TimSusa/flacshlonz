@@ -20,9 +20,9 @@
 #include "ThreadCopyFiles.hpp"
 #include "DataBase.hpp"
 #include "ThreadDataBaseImport.hpp"
+#include "States.hpp"
 
-
-class FileSystemManager : public QObject//, public FlacMetadataManager
+class FileSystemManager : public QObject
 {
     Q_OBJECT
 public:
@@ -32,6 +32,7 @@ public:
     QStringList getDiffListMetaMd5();
     QStringList getDiffListFileNames();
     QStringList getDiffListAlbumName();
+    states::eFileSystemManagerState getSelfState()const;
 
 private:
     void scanDirsToMusicCollection(const QDir& dir);
@@ -40,22 +41,20 @@ private:
     void createAndConnectThreadUpdateFlacScan(const QDir &dir);
     void createAndConnectThreadCopyFiles(const QStringList &src,const QStringList &dest);
     void createAndConnectThreadRemoveFiles(const QStringList &path);
-    void createAndConnectThreadDBImport(const QString& path);
+    void createAndConnectThreadDBImport(const QString& path, bool importToCollection);
     void destroyThreadCollectionFlacScan();
     void destroyThreadUpdateFlacScan();
     void destroyThreadCopyFiles();
     void destroyThreadRemoveFiles();
     void destroyThreadDBImport();
 
-signals:
-    //void sigFlacFound(QString file);
+signals:    
     void sigAlbumEntryCollectionFound(QString, QString, QString, QString, QString);
     void sigAlbumEntryFileIncomingFound(QString, QString, QString, QString, QString);
     void sigSearchInMusicCollectionFinished();
     void sigSearchInFileIncomingFinished();
     void sigDataBaseImportFinished();
     void sigLoadForeignDbFinished();
-    //void sigFlacListComparisonFinished();
     void sigCopyProgress(int cnt, QString path);
     void sigCopyProgressFinished(bool wasSuccessful);
     void sigRemoveProgress(int cnt, QString path);
@@ -67,11 +66,12 @@ signals:
     void sigInitUpdateCollectionByPath(QString path);
     void sigStopScanner();
     void sigStopCopy();
-    void sigForeignDbEntryFound( const QString& id, const QString &albumPath, const QString &fileName, const QString &audioMd5, const QString &metaMd5);
-    void sigEnableDbImportTo(bool);
+    void sigImportDbEntryFound( const QString& id, const QString &albumPath, const QString &fileName, const QString &audioMd5, const QString &metaMd5);
+  //  void sigEnableDbImportTo(bool);
 
 
 public slots:
+    void slotSetMainWindowState(states::eMainState state);
     void slotSearchInMusicCollection(QString path);
     void slotSearchInFileIncoming(QString path);
     void slotRemoveFromFileSystem(QStringList pathList);
@@ -81,19 +81,22 @@ public slots:
     void slotEnableDeepScan(bool enable);
     void slotInitOfMusicCollectionModelFinished();
     void slotInitOfUpdateCollectionModelFinished();
-    void slotLoadForeignDb(QString path);
+    void slotImportDbToCollection(QString path);
+    void slotImportDbToIncoming(QString path);
 
 private:
-    Persistence         m_Persistence;
-    bool                m_DeepScanEnabled;
-    int             m_CopyProgressCount;
-    int             m_RemoveProgressCount;
-    ThreadFlacScanner *m_pScannerMusicCollection;
-    ThreadFlacScanner *m_pScannerUpdateCollection;
-    ThreadRemoveFiles *m_pThreadRemoveFiles;
-    ThreadCopyFiles   *m_pThreadCopyFiles;
-    ThreadDataBaseImport *m_pThreadDataBaseImport;
-    DataBase   *m_Db;
+    Persistence             m_Persistence;
+    bool                    m_DeepScanEnabled;
+    int                     m_CopyProgressCount;
+    int                     m_RemoveProgressCount;
+    ThreadFlacScanner       *m_pScannerMusicCollection;
+    ThreadFlacScanner       *m_pScannerUpdateCollection;
+    ThreadRemoveFiles       *m_pThreadRemoveFiles;
+    ThreadCopyFiles         *m_pThreadCopyFiles;
+    ThreadDataBaseImport    *m_pThreadDataBaseImport;
+    DataBase                *m_Db;
+    states::eMainState      m_MainWindowState;
+    states::eFileSystemManagerState m_SelfState;
 };
 
 #endif // FILESYSTEMMANAGER_HPP

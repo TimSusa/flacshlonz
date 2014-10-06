@@ -26,7 +26,7 @@
 #include <QDebug>
 #include <QTableWidget>
 #include "StatusBar.hpp"
-
+#include "States.hpp"
 #include <QComboBox>
 #include "DataBase.hpp"
 #include "FreeDiskStorage.hpp"
@@ -43,15 +43,18 @@ MainWindow::MainWindow( QWidget *parent ) :
     m_FlacPathToMeta(""),
     m_CurFileInfoList(),
     m_pTreeUpdateView(),
+    m_ButtonUpdateView(new StateButton()),
+    m_ButtonCollectionView(new StateButton()),
     m_pUpdateModel(),
     m_ConfigDialog(),
     m_ProgressDialog("Please wait...", "Cancel", 0, 0, this),
     m_pTree(),
     m_pUpdateTreeCtxMenu(),
     m_LineEditCollection(),
+    m_Player(new Player),
     m_MusicCollectionPath(QDir::homePath()),
     m_FileIncomingPath(QDir::homePath()),
-    m_ForeignDbPath(""),
+    m_ImportDbPath(""),
     m_CopyRequestSrcList(),
     m_CopyRequestDestList(),
     m_IsCopyRequested(false),
@@ -61,8 +64,9 @@ MainWindow::MainWindow( QWidget *parent ) :
     m_TableColoumn(0),
     m_WizzardEnabled(m_Persistence.getEnableWizard()),
     m_DeepScanEnabled(m_Persistence.getEnableDeepScan()),
-    m_DbImportToEnabled(m_Persistence.getEnableDbImportTo()),
-    m_MainState(IDLE)
+    //m_DbImportToEnabled(m_Persistence.getEnableDbImportTo()),
+    m_HypnotoadEnabled(m_Persistence.getEnableHypnotoad()),
+    m_MainState(states::MAINSTATE_IDLE)
 {
 
     if (qApp->isSessionRestored())
@@ -78,22 +82,18 @@ MainWindow::MainWindow( QWidget *parent ) :
     // we have to create a seaparate thread.
     createFileSystemManagerThread();
 
+    emit sigMainWindowState(m_MainState);
+
     // Either we have remembered a valid, last set collection path and do a search,
     // or we prompt a msgbox for the user to set the path.
     handleStartBehaviour();
-
-    Player *player=new Player;
-    emit player->addToPlaylist(QStringList(QDir::currentPath() + "/Hypno.mp4"));//"C:\\_SUSATA\\_CODING\\CPP\\qtFlacschlonz\\Hypno.mp4"));
-    emit player->slotPlay();
-    player->show();
-
 }
 
 
 MainWindow::~MainWindow()
 {
     // DTOR
-    emit sigStopAllSearch();
+    emit sigStopScans();
     quitFileSystemManagerThread();
 }
 
@@ -147,57 +147,61 @@ void MainWindow::createMainGui()
     qDebug() << "MainWindow::createMainGui";
 
     // Create Main Window
-    setWindowTitle( QString::fromUtf8( "flacshlonz" ) );
+    setWindowTitle( QString::fromUtf8( "Flacshlonz" ) );
     QWidget *mainWidget = new QWidget(this);
     setCentralWidget(mainWidget);
-    QVBoxLayout *vMainLayout = new QVBoxLayout;
-    QSplitter *midSplitter = new QSplitter;
-    midSplitter->setOrientation(Qt::Horizontal);
-    vMainLayout->addWidget(midSplitter);
-    mainWidget->setLayout(vMainLayout);
+    QVBoxLayout *mainLayoutVertical = new QVBoxLayout;
+    QSplitter *mainSplitterHorizontal = new QSplitter;
+    mainSplitterHorizontal->setOrientation(Qt::Horizontal);
+    mainLayoutVertical->addWidget(mainSplitterHorizontal);
+    mainWidget->setLayout(mainLayoutVertical);
 
     // Create Menu Bar
     QMenuBar* menuBar = new QMenuBar(this);
     setMenuBar( menuBar );
 
     // Sub Menu
-    QMenu *fileMenu = new QMenu( QString::fromUtf8( "&Do" ) );
-    QMenu *aboutMenu = new QMenu( QString::fromUtf8( "&About" ) );
-    QMenu *settingsMenu = new QMenu( QString::fromUtf8( "&Settings" ) );
-    menuBar->addMenu( fileMenu );
-    menuBar->addMenu( settingsMenu );
-    menuBar->addMenu( aboutMenu );
+    QMenu *shlonzMenu = new QMenu( tr("Shlonz") );
+    QMenu *musicCollectionMenu = new QMenu( tr("Music Collection") );
+    QMenu *newFilesMenu = new QMenu( tr("New Files") );
+    menuBar->addMenu( shlonzMenu );
+    menuBar->addMenu( musicCollectionMenu );
+    menuBar->addMenu( newFilesMenu );
 
     // Create action
-    QAction *setCollectionPathAction = new QAction( QString::fromUtf8( "&Select Music-Library Path" ), fileMenu );
-    QAction *setFileIncomingPathAction = new QAction( QString::fromUtf8( "&Select Incoming Files Path" ), fileMenu );
-    QAction *loadForeignDbAction = new QAction("Load Foreign Database", fileMenu);
-    QAction *saveDbAs = new QAction(tr("Save Your Database as..."), fileMenu);
-    QAction *stopAllSearchAction = new QAction( QString::fromUtf8( "&Stop All Search"), fileMenu );
-    QAction *quitAction = new QAction( QString::fromUtf8( "&Quit" ), fileMenu );
-    QAction *aboutAction = new QAction( QString::fromUtf8( "&About" ), aboutMenu );
+    QAction *setCollectionPathAction = new QAction( tr( "Set path to music collection" ), shlonzMenu );
+    QAction *setFileIncomingPathAction = new QAction( tr( "Set path to new files" ), shlonzMenu );
+    QAction *actionImportDbToCollection = new QAction(tr("Import a database file to music collection"), musicCollectionMenu);
+    QAction *actionImportDbToIncoming = new QAction(tr("Import a database file to file-incoming"), newFilesMenu);
+    QAction *exportDbAs = new QAction(tr("Export music collection to database file"), shlonzMenu);
+    QAction *stopScan = new QAction( tr( "&Stop Scan"), shlonzMenu );
+    QAction *quitAction = new QAction( QString::fromUtf8( "&Quit" ), shlonzMenu );
+    QAction *aboutAction = new QAction( QString::fromUtf8( "&About" ), musicCollectionMenu );
 
     QObject::connect( setCollectionPathAction, SIGNAL( triggered()), this, SLOT( onSetMusicCollectionPath()));
     QObject::connect( setFileIncomingPathAction, SIGNAL( triggered()), this, SLOT( onSetFileIncomingPath()));
-    QObject::connect(loadForeignDbAction, SIGNAL(triggered()), this, SLOT(slotLoadForeignDb()));
-    QObject::connect( saveDbAs, SIGNAL(triggered()), this, SLOT(slotSaveDbAs()));
-    QObject::connect( stopAllSearchAction, SIGNAL(triggered()), this, SIGNAL(sigStopAllSearch()));
+    QObject::connect( actionImportDbToCollection, SIGNAL(triggered()), this, SLOT(slotImportDbToCollection()));
+    QObject::connect( actionImportDbToIncoming, SIGNAL(triggered()), this, SLOT(slotImportDbToIncoming()));
+    QObject::connect( exportDbAs, SIGNAL(triggered()), this, SLOT(slotExportDbAs()));
+    QObject::connect( stopScan, SIGNAL(triggered()), this, SIGNAL(sigStopScans()));
     QObject::connect( quitAction, SIGNAL( triggered()), qApp, SLOT( quit()));
 
     // Add action
-    fileMenu->addAction( setCollectionPathAction );
-    fileMenu->addAction( setFileIncomingPathAction );
-    fileMenu->addAction( stopAllSearchAction );
-    fileMenu->addAction( loadForeignDbAction );
-    fileMenu->addAction( saveDbAs );
-    fileMenu->addAction( quitAction );
-    aboutMenu->addAction( aboutAction );
+    shlonzMenu->addAction( stopScan );
+    shlonzMenu->addAction( exportDbAs );
+    musicCollectionMenu->addAction( setCollectionPathAction );
+    newFilesMenu->addAction( setFileIncomingPathAction );
+
+    newFilesMenu->addAction( actionImportDbToIncoming );
+    musicCollectionMenu->addAction(actionImportDbToCollection);
 
 
     // Settings Menu
-    QAction *settingsAction = new QAction( QString::fromUtf8("&Settings"), settingsMenu );
+    QAction *settingsAction = new QAction( tr("Settings"), newFilesMenu );
     connect(settingsAction, SIGNAL(triggered()), this, SLOT(onShowSettingsMenu()));
-    settingsMenu->addAction( settingsAction );
+    shlonzMenu->addAction( settingsAction );
+    shlonzMenu->addAction( aboutAction );
+    shlonzMenu->addAction( quitAction );
 
     // About dialog.
     QPixmap *pixmap = new QPixmap( QString::fromUtf8(":/about.png"));
@@ -239,10 +243,23 @@ void MainWindow::createMainGui()
     usedSpaceLabel->setMaximumHeight(15);
     uvSplitLeft->addWidget(usedSpaceLabel);
     m_FreeDiskSpaceCollectionBar.setMaximumHeight(15);
-
     uvSplitLeft->addWidget(&m_FreeDiskSpaceCollectionBar);
 
-    midSplitter->addWidget(uvSplitLeft);
+    //Create Multi-State Button for MusicCollectionView
+    m_ButtonCollectionView->setMaximumHeight(25);
+    connect(m_ButtonCollectionView, SIGNAL(sigButtonClicked(states::eButtonState)), this, SLOT(slotButtonCollectionViewClicked(states::eButtonState)));
+    if (m_Persistence.getLastOpenCollectionPathEnabled())
+    {
+        emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_UPDATE);
+    }
+    else
+        emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_SET_PATH);
+
+    uvSplitLeft->addWidget(m_ButtonCollectionView);
+
+
+    // Add Left Pane
+    mainSplitterHorizontal->addWidget(uvSplitLeft);
 
     // Mid Pane: Table
     m_pTable = new QTableWidget(this);
@@ -251,7 +268,8 @@ void MainWindow::createMainGui()
     m_pTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_pTable->setHorizontalScrollMode( QAbstractItemView::ScrollPerPixel );
     m_pTable->setVerticalScrollMode( QAbstractItemView::ScrollPerPixel );
-    midSplitter->addWidget(m_pTable);
+    mainSplitterHorizontal->addWidget(m_pTable);
+    m_pTable->hide();
 
     // Right Pane.
     QSplitter *uvSplit=new QSplitter(this);
@@ -274,17 +292,18 @@ void MainWindow::createMainGui()
     QObject::connect(m_pTreeUpdateView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(onUpdateTreeDblClicked(QModelIndex)));
     uvSplit->addWidget(m_pTreeUpdateView);
 
-    QPushButton *rescanButton = new QPushButton(tr("Rescan"));
-    rescanButton->setMaximumHeight(25);
-    QObject::connect(rescanButton, SIGNAL(clicked()), this, SLOT(slotRescanButtonClicked()));
-    uvSplit->addWidget(rescanButton);
-    midSplitter->addWidget(uvSplit);
+    // Create Multi-State Button for Update View
+    m_ButtonUpdateView->setMaximumHeight(25);
+    QObject::connect(m_ButtonUpdateView, SIGNAL(sigButtonClicked(states::eButtonState)), this, SLOT(slotButtonUpdateViewClicked(states::eButtonState)));
+    emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_SET_PATH);
+    uvSplit->addWidget(m_ButtonUpdateView);
+    mainSplitterHorizontal->addWidget(uvSplit);
 
     // Status Bar
     m_pStatusBar = new StatusBar;
     m_pStatusBar->setMinimumHeight(height() / 25);
     m_pStatusBar->setMaximumHeight(height() / 25);
-    vMainLayout->addWidget(m_pStatusBar);
+    mainLayoutVertical->addWidget(m_pStatusBar);
 
     // Context Menu for MusicCollection View
     m_pCollectionCtxMenu = new QMenu(this);
@@ -295,11 +314,7 @@ void MainWindow::createMainGui()
     m_pCollectionCtxMenu->addAction(tr("Remove"), this, SLOT(slotRemoveFromCollection()));
     m_pCollectionCtxMenu->hide();
 
-    // Context Menu for Update Tree view top
-    m_pUpdateTreeCtxMenu = new QMenu(this);
-    m_pUpdateTreeCtxMenu->addAction(tr("Import to music collection."), this, SLOT(slotCopyToMusicCollection()));
-    m_pUpdateTreeCtxMenu->addAction(tr("Copy to..."), this, SLOT(onCtxTopMenuCopyTo()));
-    m_pUpdateTreeCtxMenu->hide();
+    createUpdateCtxMenu();
 
     // Progress Dialog
     m_ProgressDialog.setWindowModality(Qt::WindowModal);
@@ -308,8 +323,9 @@ void MainWindow::createMainGui()
 
     connect(this, SIGNAL(sigRescanAll()), this, SLOT(slotRescanAll()));
     connect(&m_ConfigDialog, SIGNAL(sigEnableWizard(bool)), this, SLOT(slotEnableWizard(bool)));
-    connect(&m_ConfigDialog, SIGNAL(sigEnableDbImportTo(bool)), this, SLOT(slotEnableDbImportTo(bool)));
-    connect(&m_ConfigDialog, SIGNAL(sigEnableDeepScan(bool)), this, SLOT(slotEnableDeepScan(bool)));
+    //connect(&m_ConfigDialog, SIGNAL(sigEnableDbImportTo(bool)), this, SLOT(slotEnableDbImportTo(bool)));
+    connect(&m_ConfigDialog, SIGNAL(sigEnableHypnotoad(bool)), this, SLOT(slotEnableHypnotoad(bool)));
+    //connect(&m_ConfigDialog, SIGNAL(sigEnableDeepScan(bool)), this, SLOT(slotEnableDeepScan(bool)));
     connect(this, SIGNAL(sigRunSelectCollectionPathMsgBox()), this, SLOT(slotRunSelectCollectionPathMsgBox()));
 
     setUpdateTreeLabelTxt(tr("Please select an incoming path (right click)!"));
@@ -326,6 +342,7 @@ void MainWindow::createFileSystemManagerThread()
     // m_FileSystemManager.moveToThread(pFileSystemManagerThread);
 
     // Connect signal to slot.
+    connect(this, SIGNAL(sigMainWindowState(states::eMainState)), &m_FileSystemManager, SLOT(slotMainWindowState(states::eMainState)));
     connect(this, SIGNAL(sigSearchInMusicCollection(QString)), &m_FileSystemManager, SLOT(slotSearchInMusicCollection(QString)) );
     connect(this, SIGNAL(sigSearchInFileIncoming(QString)), &m_FileSystemManager, SLOT(slotSearchInFileIncoming(QString)));
     connect(this, SIGNAL(sigCopyAllFolderTo(QStringList,QStringList)), &m_FileSystemManager, SLOT(slotCopyAllFolderTo(QStringList,QStringList)));
@@ -333,9 +350,10 @@ void MainWindow::createFileSystemManagerThread()
     connect(this, SIGNAL(sigResetRemoveProgressCounter()), &m_FileSystemManager, SLOT(slotResetRemoveProgressCounter()));
     connect(this, SIGNAL(sigRemoveFromFileSystem(QStringList)), &m_FileSystemManager, SLOT(slotRemoveFromFileSystem(QStringList)));
     connect(this, SIGNAL(sigEnableDeepScan(bool)), &m_FileSystemManager, SLOT(slotEnableDeepScan(bool)));
-    connect(this, SIGNAL(sigStopAllSearch()), &m_FileSystemManager, SIGNAL(sigStopScanner()));
-    connect(this, SIGNAL(sigStopAllSearch()), &m_FileSystemManager, SIGNAL(sigStopCopy()));
-    connect(this, SIGNAL(sigLoadForeignDb(QString)), &m_FileSystemManager, SLOT(slotLoadForeignDb(QString)));
+    connect(this, SIGNAL(sigStopScans()), &m_FileSystemManager, SIGNAL(sigStopScanner()));
+    connect(this, SIGNAL(sigStopScans()), &m_FileSystemManager, SIGNAL(sigStopCopy()));
+    connect(this, SIGNAL(sigImportDbToCollection(QString)), &m_FileSystemManager, SLOT(slotImportDbToCollection(QString)));
+    connect(this, SIGNAL(sigImportDbToIncoming(QString)), &m_FileSystemManager, SLOT(slotImportDbToIncoming(QString)));
 
 
     // In order to use slots and signals with parameters, we have to use qRegisterMetaType.
@@ -348,10 +366,10 @@ void MainWindow::createFileSystemManagerThread()
     //connect(&m_FileSystemManager, SIGNAL(sigFolderFound(Album)), this, SLOT(slotFlacFolderFound(Album)));
     connect(&m_FileSystemManager, SIGNAL(sigAlbumEntryCollectionFound(QString,QString,QString,QString,QString)), this, SLOT(slotAlbumEntryCollectionFound(QString,QString,QString,QString,QString)));
     connect(&m_FileSystemManager, SIGNAL(sigAlbumEntryFileIncomingFound(QString,QString,QString,QString,QString)), this, SLOT(slotAlbumEntryFileIncomingFound(QString,QString,QString,QString,QString)));
-    connect(&m_FileSystemManager, SIGNAL(sigForeignDbEntryFound(QString,QString,QString,QString,QString)), this, SLOT(slotAlbumEntryFileIncomingFound(QString,QString,QString,QString,QString)));
+    connect(&m_FileSystemManager, SIGNAL(sigImportDbEntryFound(QString,QString,QString,QString,QString)), this, SLOT(slotAlbumEntryFileIncomingFound(QString,QString,QString,QString,QString)));
     connect(&m_FileSystemManager, SIGNAL(sigSearchInMusicCollectionFinished()), this, SLOT(slotSearchInMusicCollectionFinished()));
     connect(&m_FileSystemManager, SIGNAL(sigSearchInFileIncomingFinished()), this, SLOT(slotSearchInFileIncomingFinished()));
-    connect(&m_FileSystemManager, SIGNAL(sigDataBaseImportFinished()), this, SLOT(slotLoadForeignDbFinished()));
+    connect(&m_FileSystemManager, SIGNAL(sigDataBaseImportFinished()), this, SLOT(slotDbImportFinished()));
     //connect(&m_FileSystemManager, SIGNAL(sigFlacListComparisonFinished()), this, SLOT(slotFlacListComparisonFinished()));
     connect(&m_FileSystemManager, SIGNAL(sigCopyProgress(int,QString)), this, SLOT(slotCopyProgress(int,QString)));
     connect(&m_FileSystemManager, SIGNAL(sigCopyProgressFinished(bool)), this, SLOT(slotCopyProgressFinished(bool)));
@@ -371,12 +389,24 @@ void MainWindow::createComboBox()
 
     if ( m_DeepScanEnabled )
     {
-        m_ComboBox.addItem("Tracks you do not have");
+        m_ComboBox.addItem("Tracks you don´t have");
         m_ComboBox.addItem("Tracks you own, but with different metadata");
     }
     m_ComboBox.addItem("Tracks you maybe have, with different filename");
     m_ComboBox.addItem("Tracks you maybe have, but in a different named folder");
     connect(&m_ComboBox, SIGNAL(activated(int)), this, SLOT(slotSelectFromComboBox(int)));
+}
+
+void MainWindow::createUpdateCtxMenu()
+{
+    qDebug() << "MainWindow::createUpdateCtxMenu";
+
+    // Context Menu for Update Tree view top
+    m_pUpdateTreeCtxMenu = new QMenu(this);
+    m_pUpdateTreeCtxMenu->addAction(tr("Import to music collection."), this, SLOT(slotCopyToMusicCollection()));
+    m_pUpdateTreeCtxMenu->addAction(tr("Copy to..."), this, SLOT(onCtxTopMenuCopyTo()));
+    m_pUpdateTreeCtxMenu->hide();
+
 }
 
 bool MainWindow::runMsgBoxRemoveSelection()
@@ -540,6 +570,7 @@ bool MainWindow::runMsgBoxIncomingPathContainedCollectionPath()
 void MainWindow::setTableLabels(int count)
 {
     qDebug() << "MainWindow::setTableLabels " << count;
+    m_pTable->show();
 
     m_TableRow=0;
     m_TableColoumn=0;
@@ -640,13 +671,17 @@ void MainWindow::onSetMusicCollectionPath()
     }
     else
     {
-        m_MainState = FILE_SCAN;
+        m_MainState = states::MAINSTATE_FILE_SCAN;
+        emit sigMainWindowState(m_MainState);
+        emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_STOP);
+
         m_pStatusBar->setStatusBarTxt("Your Music Collection Folder is: " + m_MusicCollectionPath );
         m_Persistence.persistLastOpenCollectionPath(m_MusicCollectionPath);
         updateFreeDiskSpace(m_MusicCollectionPath);
         // Reset Tree-View
         setTreeViewRoot(m_MusicCollectionPath);
         emit sigSearchInMusicCollection(m_MusicCollectionPath);
+        startPlayer();
     }
 }
 
@@ -654,6 +689,7 @@ void MainWindow::onSetFileIncomingPath()
 {
     // Clear old results.
     clearUpdateViews();
+    m_ButtonUpdateView->setEnabled(true);
 
     m_FileIncomingPath = QFileDialog::getExistingDirectory(this, tr("Choose incoming files"), m_FileIncomingPath, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
@@ -672,13 +708,20 @@ void MainWindow::onSetFileIncomingPath()
         qDebug() << "Path is empty";
         m_pStatusBar->setStatusBarTxt("Invalid Path!");
         setUpdateTreeLabelTxt(tr( "Please try to set a valid file incoming path (right-click)!" ));
+        emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_SET_PATH);
     }
     else
     {
-        m_MainState = FILE_SCAN;
         emit sigSearchInFileIncoming(m_FileIncomingPath); // Will send finished signal!
+
+        // Set new MainState
+        m_MainState = states::MAINSTATE_FILE_SCAN;
+        emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_STOP);
+        emit sigMainWindowState(m_MainState);
+
         setUpdateTreeLabelTxt(tr("File Scan Mode!"));
         m_pStatusBar->setStatusBarTxt("Your incoming files folder is: " + m_FileIncomingPath );
+        startPlayer();
     }
 }
 
@@ -692,22 +735,29 @@ void MainWindow::onShowDiffList(const QStringList &list)
 {
     qDebug() << "MainWindow::onShowDiffList";
     clearUpdateViews();
+
+    // Set header label text.
+
+    if (states::MAINSTATE_DB_IMPORT == m_MainState)
+    {
+    //    item = new QStandardItem(foundPath);
+        m_pUpdateModel->setHorizontalHeaderLabels(QStringList("Database Import: " + Utils::getBaseFromPath(m_ImportDbPath)));
+    }
+    else if ( states::MAINSTATE_FILE_SCAN == m_MainState )
+    {
+        m_pUpdateModel->setHorizontalHeaderLabels(QStringList(m_FileIncomingPath));
+    }
+
     // Print if no new files were found!
     if (list.empty())
     {
         m_pStatusBar->setStatusBarTxt("No FLAC files for update found!");
-        /*
-        QMessageBox *mb = new QMessageBox;
-        mb->setText("No FLAC-Files for update found!");
-        mb->show();
-        */
         return;
     }
     else
     {
         m_pStatusBar->setStatusBarTxt("FLAC files found.");
-        // Set header label text.
-        m_pUpdateModel->setHorizontalHeaderLabels(QStringList(m_FileIncomingPath));
+
         // Take the first value and remember.
         QStandardItem *parentItem = m_pUpdateModel->invisibleRootItem();
         QStandardItem *item;
@@ -717,15 +767,20 @@ void MainWindow::onShowDiffList(const QStringList &list)
             if ( !(*uit).endsWith(".flac"))
             {
                 parentItem = m_pUpdateModel->invisibleRootItem();
-                // Crop off FileincomingPath, because its part of the header.
-                if (foundPath.contains(m_FileIncomingPath))
-                {
-                    item = new QStandardItem(foundPath.remove(0,m_FileIncomingPath.length()));
-                }
-                else
+
+                // critical?
+                if (states::MAINSTATE_DB_IMPORT == m_MainState)
                 {
                     item = new QStandardItem(foundPath);
-                    m_pUpdateModel->setHorizontalHeaderLabels(QStringList("Database Import:"));
+                    //m_pUpdateModel->setHorizontalHeaderLabels(QStringList("Database Import: " + Utils::getBaseFromPath(m_ImportDbPath)));
+                }
+                else if ( states::MAINSTATE_FILE_SCAN == m_MainState )
+                {
+                    // Crop off FileincomingPath, because its part of the header.
+                    if (foundPath.contains(m_FileIncomingPath))
+                    {
+                        item = new QStandardItem(foundPath.remove(0,m_FileIncomingPath.length()));
+                    }
                 }
                 parentItem->appendRow(item);
                 parentItem=item;
@@ -790,13 +845,15 @@ void MainWindow::onUpdateTreeDblClicked(QModelIndex idx)
 void MainWindow::onTreeUpdateCtxMenu(QPoint)
 {
     qDebug() << "MainWindow::onTreeUpdateCtxMenu(QPoint)";
-    if (m_UpdateTreeViewModelIdx.isValid()) // hack to detect, if items are in view
+    if (m_MainState == states::MAINSTATE_FILE_SCAN)
     {
         m_pUpdateTreeCtxMenu->show();
         m_pUpdateTreeCtxMenu->exec(QCursor::pos());
     }
-    else
+    else if (m_MainState != states::MAINSTATE_DB_IMPORT) // do not search in db import mode.
+    {
         emit onSetFileIncomingPath();
+    }
 }
 
 void MainWindow::onCtxTopMenuCopyTo()
@@ -828,6 +885,8 @@ void MainWindow::slotSearchInMusicCollectionFinished()
 {
     qDebug() << "MainWindow::slotSearchInMusicCollectionFinished";
     m_pStatusBar->setStatusBarTxt("Searching in Music-Collection successfully finished.");
+    stopPlayer();
+    emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_UPDATE);
 
     if (m_WizzardEnabled)
     {
@@ -842,35 +901,45 @@ void MainWindow::slotSearchInFileIncomingFinished()
     qDebug() << "MainWindow::slotSearchInFileIncomingFinished";
     m_pStatusBar->setStatusBarTxt("Searching in File-Incoming Folder successfully finished.");
     m_WizzardEnabled = false;
-
+    stopPlayer();
     createComboBox();
 
     // Fill Combobox, with relevant values
     if (!m_FileSystemManager.getDiffListAudioMd5().isEmpty() || !m_FileSystemManager.getDiffListFileNames().isEmpty() || !m_FileSystemManager.getDiffListAlbumName().isEmpty() || !m_FileSystemManager.getDiffListMetaMd5().isEmpty())
     {
         emit onShowDiffList(m_FileSystemManager.getDiffListAudioMd5());
+        emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_UPDATE);
     }
     else
-        setUpdateTreeLabelTxt(tr("No Update Content found!"));
+    {
+        m_pStatusBar->setStatusBarTxt(tr("No Update Content found!"));
+        setUpdateTreeLabelTxt(m_FileIncomingPath);
+        emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_SET_PATH);
+    }
 }
 
-void MainWindow::slotLoadForeignDbFinished()
+void MainWindow::slotDbImportFinished()
 {
-    qDebug() << "MainWindow::slotLoadForeignDbFinished";
+    qDebug() << "MainWindow::slotDbImportFinished";
     clearUpdateViews();
+    stopPlayer();
+
     // Fill Combobox, with relevant values
     if (!m_FileSystemManager.getDiffListAudioMd5().isEmpty() || !m_FileSystemManager.getDiffListFileNames().isEmpty() || !m_FileSystemManager.getDiffListAlbumName().isEmpty() || !m_FileSystemManager.getDiffListMetaMd5().isEmpty())
     {
-        m_pStatusBar->setStatusBarTxt("Import of foreign database successfully finished.");
+        m_pStatusBar->setStatusBarTxt("Import of database successfully finished.");
         createComboBox();
-        m_pUpdateModel->setHorizontalHeaderLabels(QStringList("Content of foreign database:"));
+        m_pUpdateModel->setHorizontalHeaderLabels(QStringList("Content of imported database:"));
         emit onShowDiffList(m_FileSystemManager.getDiffListAudioMd5());
+        emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_UPDATE);
+        m_ButtonUpdateView->setEnabled(false);
     }
     else
     {
-
-        setUpdateTreeLabelTxt(tr("No Update Content found!"));
+        //setUpdateTreeLabelTxt(tr("No Update Content found!"));
         m_pStatusBar->setStatusBarTxt(tr("No Update Content found!"));
+
+        emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_SET_PATH);
     }
 
 }
@@ -929,7 +998,7 @@ void MainWindow::slotCopyProgressFinished(bool wasSuccessful)
 
     setTreeViewRoot(m_MusicCollectionPath);
     //clearUpdateViews();
-    emit sigStopAllSearch();
+    emit sigStopScans();
     emit sigSearchInMusicCollection(m_MusicCollectionPath);
     emit sigSearchInFileIncoming(m_FileIncomingPath);
 }
@@ -975,7 +1044,7 @@ void MainWindow::slotRemoveProgressFinished(bool wasSuccessful)
     {
         // TODO: Make this cool!
         //removeSelectedUpdateItems();
-        emit sigStopAllSearch();
+        emit sigStopScans();
         emit sigSearchInMusicCollection(m_MusicCollectionPath);
         emit sigSearchInFileIncoming(m_FileIncomingPath);
     }
@@ -988,7 +1057,7 @@ void MainWindow::slotRemoveFromCollection()
 
     // Never ever remove a file, while searching
     // in filesystem!
-    emit sigStopAllSearch();
+    emit sigStopScans();
 
     if (runMsgBoxRemoveSelection())
     {
@@ -1019,8 +1088,10 @@ void MainWindow::slotSetItemToCollectionRootPath()
     // Reset Tree-View
     setTreeViewRoot(m_MusicCollectionPath);
     updateFreeDiskSpace(m_MusicCollectionPath);
-    emit sigStopAllSearch();
+    emit sigStopScans();
     emit sigSearchInMusicCollection(m_MusicCollectionPath);
+    startPlayer();
+    emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_STOP);
 }
 
 void MainWindow::slotGoToLastCollectionRootPath()
@@ -1042,8 +1113,10 @@ void MainWindow::slotGoToLastCollectionRootPath()
     m_Persistence.persistLastOpenCollectionPath(m_MusicCollectionPath);
     setTreeViewRoot(m_MusicCollectionPath);
     updateFreeDiskSpace(m_MusicCollectionPath);
-    emit sigStopAllSearch();
+    emit sigStopScans();
     emit sigSearchInMusicCollection(m_MusicCollectionPath);
+    startPlayer();
+    emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_STOP);
 }
 
 void MainWindow::slotCreateDirInCollection()
@@ -1080,11 +1153,17 @@ void MainWindow::slotEnableWizard(bool enable)
     qDebug() << "MainWindow::slotEnableWizard " << enable;
     m_WizzardEnabled = enable;
 }
-
+/*
 void MainWindow::slotEnableDbImportTo(bool enable)
 {
     qDebug() << "MainWindow::slotEnableDbImportTo " << enable;
     m_DbImportToEnabled = enable;
+}
+*/
+void MainWindow::slotEnableHypnotoad(bool enable)
+{
+    qDebug() << "MainWindow::slotEnableHypnotoad" << enable;
+    m_HypnotoadEnabled = enable;
 }
 
 void MainWindow::slotEnableDeepScan(bool enable)
@@ -1109,12 +1188,65 @@ void MainWindow::slotRunSelectCollectionPathMsgBox()
     runMsgBoxSelectCollectionPath();
 }
 
-void MainWindow::slotRescanButtonClicked()
+void MainWindow::slotButtonUpdateViewClicked(states::eButtonState state)
 {
-    qDebug() << "Rescan Button Clicked";
+
     clearUpdateViews();
-    if (!m_FileIncomingPath.isEmpty())
-        emit sigSearchInFileIncoming(m_FileIncomingPath);
+
+    if (state == states::BUTTON_UPDATE)
+    {
+        qDebug() << "Update Update Button Clicked: states::BUTTON_UPDATE";
+        if (!m_FileIncomingPath.isEmpty())
+        {
+            emit sigSearchInFileIncoming(m_FileIncomingPath);
+            emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_STOP);
+            startPlayer();
+        }
+    }
+    else if (state == states::BUTTON_STOP)
+    {
+        qDebug() << "Update Stop Button Clicked: states::BUTTON_STOP";
+        stopPlayer();
+        emit sigStopScans();
+        emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_UPDATE);
+    }
+    else if (state == states::BUTTON_SET_PATH )
+    {
+        emit onSetFileIncomingPath();
+    }
+    else
+    {
+        qDebug() << "Rescan Button Clicked: states::BUTTON_SOMETHING!";
+    }
+}
+
+void MainWindow::slotButtonCollectionViewClicked(states::eButtonState state)
+{
+    if (state == states::BUTTON_UPDATE)
+    {
+        qDebug() << "Collectoin Button Clicked: states::BUTTON_UPDATE";
+        if (!m_MusicCollectionPath.isEmpty())
+        {
+            emit sigSearchInMusicCollection(m_MusicCollectionPath);
+            emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_STOP);
+            startPlayer();
+        }
+    }
+    else if (state == states::BUTTON_STOP)
+    {
+        qDebug() << "Collection Button Clicked: states::BUTTON_STOP";
+        stopPlayer();
+        emit sigStopScans();
+        emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_UPDATE);
+    }
+    else if (state == states::BUTTON_SET_PATH )
+    {
+        emit onSetMusicCollectionPath();
+    }
+    else
+    {
+        qDebug() << "Collection Button Clicked: states::BUTTON_SOMETHING!";
+    }
 }
 
 void MainWindow::slotSelectFromComboBox(int selection)
@@ -1155,46 +1287,99 @@ void MainWindow::slotSelectFromComboBox(int selection)
     }
 }
 
-void MainWindow::slotLoadForeignDb()
+void MainWindow::slotImportDbToCollection()
 {
-    qDebug() << "MainWindow::slotLoadForeignDb";
+    qDebug() << "MainWindow::slotImportDbToCollection";
+    if (states::FM_DB_IMPORT_INCOMING == m_FileSystemManager.getSelfState())
+    {
+        qDebug() << "CRASH IGNORED!";
+        m_pStatusBar->setStatusBarTxt("Action ignored. Try to scan for new files at first!");
+        return;
+    }
 
-    QString dbPath = QFileDialog::getOpenFileName(this, tr("Choose foreign database"), QDir::rootPath());
+    QString dbPath = QFileDialog::getOpenFileName(this, tr("Choose database file to import to your music collection!"), QDir::rootPath());
 
     // Avoid crash, when loading the same database twice
-    if (dbPath != m_ForeignDbPath)
+    //  if (dbPath != m_ForeignDbPath)
+    //  {
+    m_ImportDbPath = dbPath;
+    if (QFile(m_ImportDbPath).exists())
     {
-        m_ForeignDbPath = dbPath;
-        if (QFile(m_ForeignDbPath).exists())
+        // Avoid loading the database, in which we want to write to.
+        // PS: There are some idiots outta there!
+        if (m_ImportDbPath.contains(DataBase::s_DatabaseName))
         {
-            // Avoid loading the database, in which we want to write to.
-            // PS: There are some idiots outta there!
-            if (m_ForeignDbPath.contains(DataBase::s_DatabaseName))
-            {
-                m_pStatusBar->setStatusBarTxt(tr("Never ever load the same database, that we want to write into!"));
-                return;
-            }
-
-           // clearUpdateViews();
-            m_MainState = DB_IMPORT;
-            qDebug() << "Choosen database path: " << m_ForeignDbPath;
-            emit sigLoadForeignDb(m_ForeignDbPath);
-            QString tmp;
-            if (m_DbImportToEnabled)
-                tmp = tr(" to Music Collection...");
-            else
-                tmp = tr(" to File Incoming...");
-
-            setUpdateTreeLabelTxt(tr("Database Import ") + tmp);
+            m_pStatusBar->setStatusBarTxt(tr("Never ever load the same database, that we want to write into!"));
+            return;
         }
+
+        // Set new MainState
+        m_MainState = states::MAINSTATE_DB_IMPORT;
+        emit sigMainWindowState(m_MainState);
+        emit m_ButtonCollectionView->slotSetButtonState(states::BUTTON_STOP);
+
+        qDebug() << "Choosen database path: " << m_ImportDbPath;
+        emit sigImportDbToCollection(m_ImportDbPath);
+        QString tmp = tr("Database Import to Music Collection\n ") + Utils::getBaseFromPath(m_ImportDbPath);
+        m_FSModel.setHeaderTxt(tmp);
+
+        m_pTree->reset();
+        startPlayer();
+        //setUpdateTreeLabelTxt( tmp);
     }
-    else
-    {
-        m_pStatusBar->setStatusBarTxt(tr("Ignored action! Database has already been loaded!"));
-    }
+    // }
+    // else
+    //  {
+    //     m_pStatusBar->setStatusBarTxt(tr("Ignored action! Database has already been loaded!"));
+    // }
 }
 
-void MainWindow::slotSaveDbAs()
+void MainWindow::slotImportDbToIncoming()
+{
+    qDebug() << "MainWindow::slotImportDbToIncoming";
+    if (states::FM_DB_IMPORT_COLLECTION == m_FileSystemManager.getSelfState())
+    {
+        qDebug() << "CRASH IGNORED!";
+        m_pStatusBar->setStatusBarTxt("Action ignored. Try to scan for new files at first!");
+        return;
+    }
+
+    QString dbPath = QFileDialog::getOpenFileName(this, tr("Choose database file to import to file incoming!"), QDir::rootPath());
+
+    // Avoid crash, when loading the same database twice
+    //  if (dbPath != m_ForeignDbPath)
+    //  {
+    m_ImportDbPath = dbPath;
+    if (QFile(m_ImportDbPath).exists())
+    {
+        // Avoid loading the database, which we want to write into.
+        // PS: There are some idiots outta there!
+        if (m_ImportDbPath.contains(DataBase::s_DatabaseName))
+        {
+            m_pStatusBar->setStatusBarTxt(tr("Never ever load the same database, that we want to write into!"));
+            return;
+        }
+
+        // Set new MainState
+        m_MainState = states::MAINSTATE_DB_IMPORT;
+        emit sigMainWindowState(m_MainState);
+        emit m_ButtonUpdateView->slotSetButtonState(states::BUTTON_STOP);
+
+        qDebug() << "Choosen database path: " << m_ImportDbPath;
+
+        QString tmp = tr("Database Import to File Incoming:\n") + Utils::getBaseFromPath(m_ImportDbPath);
+        setUpdateTreeLabelTxt(tmp);
+        emit sigImportDbToIncoming(m_ImportDbPath);
+        startPlayer();
+    }
+    // }
+    // else
+    //  {
+    //     m_pStatusBar->setStatusBarTxt(tr("Ignored action! Database has already been loaded!"));
+    // }
+}
+
+void MainWindow::slotExportDbAs()
 {
     qDebug() << "MainWindow::slotSaveDbAs";
     QString dbPath = QFileDialog::getSaveFileName(this, tr("Choose a filename for the database"), QDir::rootPath());
@@ -1692,5 +1877,41 @@ void MainWindow::setUpdateTreeLabelTxt(const QString &txt)
 {
     m_pUpdateModel->setHorizontalHeaderLabels(QStringList(txt));
     m_pTreeUpdateView->setModel(m_pUpdateModel);
+}
+
+void MainWindow::startPlayer()
+{
+    qDebug() << "MainWindow::startPlayer()";
+
+    // Ladies and Gentleman: The Hypnotoad!
+    if (m_HypnotoadEnabled && (NULL != m_Player))
+    {
+        m_Player->setWindowFlags(Qt::WindowStaysOnTopHint);
+        QStringList playlist;
+        playlist << "Hypno.mp4" << "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4";
+        if ( states::MAINSTATE_DB_IMPORT == m_MainState )
+            emit m_Player->slotSetStatusInfo("Database Import...");
+        else
+            emit m_Player->slotSetStatusInfo("File Scan...");
+
+        emit m_Player->addToPlaylist(playlist);
+        emit m_Player->slotPlay();
+        m_Player->show();
+        connect(m_Player, SIGNAL(fullScreenChanged(bool)), this, SIGNAL(sigStopScans()));
+    }
+    else
+    {
+        qDebug() << "ERROR: MainWindow::startPlayer: player is NULL" ;
+    }
+}
+
+void MainWindow::stopPlayer()
+{
+    qDebug() << "MainWindow::stopPlayer()";
+    if (NULL!=m_Player)
+    {
+        emit m_Player->slotStop();
+        m_Player->hide();
+    }
 }
 

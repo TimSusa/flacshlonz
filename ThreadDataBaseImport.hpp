@@ -17,38 +17,40 @@ class ThreadDataBaseImport : public QThread
     Q_OBJECT
 
 public:
-    ThreadDataBaseImport(const QString& path, QObject *parent = 0);
+    ThreadDataBaseImport(const QString& path, bool importToCollection, QObject *parent = 0);
     void run();
 
-    static const char* s_ForeignDbConnectionName;
-    static const char* s_DefaultDbImportConnectionName;
+    static const char* s_ConnectionNameImportDb;
+    static const char* s_ConnectionNameDefaultDbImport;
 
-    void closeDb();
-    void closeConnection();
 
 public slots:
     void slotStop();
     void slotResetProgressCount();
-    void slotEnableDbImportTo(bool toCollection);
+    void slotCloseDb();
+    void slotCloseConnection();
+
 signals:
-    void sigForeignDbEntryFound( const QString& id, const QString &albumPath, const QString &fileName, const QString &audioMd5, const QString &metaMd5);
+    void sigImportDbEntryFound( const QString& id, const QString &albumPath, const QString &fileName, const QString &audioMd5, const QString &metaMd5);
     void sigThreadFinished(bool wasSuccessful);
 
 
 private:
-    QString m_Path;
-    QSqlDatabase m_ForeignDB;
-    QSqlDatabase m_Db;
+    QString m_PathToImportDb;
+    QSqlDatabase m_DbImport;
+    QSqlDatabase m_DbDefault;
     bool m_Stopped;
     int m_ProgressCount;
     QString m_TableNameCollection;
     QString m_TableNameFileIncoming;
     Persistence m_Persistence;
-    bool    m_EnableDbImportTo;
+    bool    m_EnableDbImportToCollection;
 
 
-    void connectToForeignDB();
-    void connectToDb();
+    void closeDb();
+    void closeConnection();
+    void connectToImportDBb();
+    void connectToDefaultDb();
     void createFileIncomingTable();
     void createCollectionTable();
     void insertValueToFileIncomingTable(const QString &id, const QString &albumPath, const QString &fileName, const QString &audioMd5, const QString &metaMd5);

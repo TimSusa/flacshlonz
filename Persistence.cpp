@@ -25,8 +25,8 @@ Persistence::Persistence():
     m_LastOpenFile(),
     m_EnableWizard(true),
     m_EnableDbImportTo(false),
-        m_EnableHypnoad(false),
-    m_EnableDeepScan(true)
+    m_EnableDeepScan(true),
+    m_EnableHypnoad(false)
 {
     initByPath(s_FileName);
 }
@@ -56,12 +56,12 @@ void Persistence::initByPath(const QString& path)
             {
                 setEnableWizard( m_Settings.value(childKey).value<bool>() );
             }
-
+/*
             if ( childKey == s_KeyEnableDbImportTo ) // ENABLE_DB_IMPORT_TO
             {
                 setEnableDbImportTo( m_Settings.value(childKey).value<bool>() );
             }
-
+*/
             if ( childKey == s_KeyEnableHypnoad ) // ENABLE_HYPNOAD
             {
                 setEnableHypnoad( m_Settings.value(childKey).value<bool>() );
@@ -143,7 +143,7 @@ bool Persistence::getEnableWizard() const
 {
     return m_EnableWizard;
 }
-
+/*
 void Persistence::persistEnableDbImportTo(bool enable)
 {
     qDebug() << "Persistence::persistEnableDbQueryBox";
@@ -162,8 +162,8 @@ bool Persistence::getEnableDbImportTo() const
 {
     return m_EnableDbImportTo;
 }
-
-void Persistence::persistEnableHypnoad(bool enable)
+*/
+void Persistence::persistEnableHypnotoad(bool enable)
 {
     m_Settings.beginGroup(s_SectionGeneral);
     m_Settings.setValue(s_KeyEnableHypnoad, enable);
@@ -176,7 +176,7 @@ void Persistence::setEnableHypnoad(bool enable)
     m_EnableHypnoad = enable;
 }
 
-bool Persistence::getEnableHypnoad()const
+bool Persistence::getEnableHypnotoad()const
 {
     return m_EnableHypnoad;
 }

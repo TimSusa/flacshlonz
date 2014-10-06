@@ -25,12 +25,12 @@ public:
     ConfigDialog();
 
 signals:
-    void sigEnableDeepScan(bool isChecked);
-    void sigEnableQuickScan(bool isChecked);
+    //void sigEnableDeepScan(bool isChecked);
+    //void sigEnableQuickScan(bool isChecked);
     void sigEnableWizard(bool isChecked);
-    void sigEnableDbImportTo(bool isChecked);
+    //void sigEnableDbImportTo(bool isChecked);
     void sigEnableLastOpenedFile(bool isChecked);
-    void sigEnableHypnoad(bool isChecked);
+    void sigEnableHypnotoad(bool isChecked);
 
 public slots:
     void slotChangePage(QListWidgetItem *current, QListWidgetItem *previous);

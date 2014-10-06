@@ -1,10 +1,11 @@
-//#include "StringEncodingWin.hpp"
+#include "StringEncodingWin.hpp"
 #include <iostream>
+#include <io.h>
 #include <fcntl.h>
 /*
 StringEncodingWin::StringEncodingWin()
 {
-    //_setmode(_fileno(stdout), _O_U16TEXT);
+    _setmode(_fileno(stdout), _O_U16TEXT);
 }
 
 #ifdef Q_OS_WIN

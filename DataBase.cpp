@@ -25,6 +25,11 @@ DataBase::~DataBase()
     closeConnection();
 }
 
+bool DataBase::isOpen()
+{
+    return m_Db.isOpen();
+}
+
 void DataBase::connectToDefaultDb()
 {
     qDebug() << "DataBase::connectToDefaultDb()";

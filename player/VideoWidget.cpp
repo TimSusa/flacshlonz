@@ -41,6 +41,7 @@
 #include "VideoWidget.hpp"
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QDebug>
 
 VideoWidget::VideoWidget(QWidget *parent)
     : QVideoWidget(parent)
@@ -75,6 +76,7 @@ void VideoWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 void VideoWidget::mousePressEvent(QMouseEvent *event)
 {
+    qDebug() << "VideoWidget::mousePressEvent";
     QVideoWidget::mousePressEvent(event);
 }
 

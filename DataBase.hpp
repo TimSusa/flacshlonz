@@ -21,7 +21,9 @@ public:
     static const char* s_FileIncomingTableName;
     static const char* s_DatabaseDriver;
 
+    bool isOpen();
     void createFileIncomingTable();
+    void createCollectionTable();
     void deleteCollectionTable();
     bool deleteFileIncomingTable();
     void selectTableDiffAudioMd5();
@@ -45,7 +47,7 @@ private:
     QStringList m_QueryResultsToShow;
 
     void connectToDefaultDb();
-    void createCollectionTable();
+
     void insertValueToCollectionTable(const QString& id, const QString &albumPath, const QString &fileName, const QString& audioMd5, const QString& metaMd5);
     void insertValueToFileIncomingTable(const QString& id, const QString &albumPath, const QString &fileName, const QString& audioMd5, const QString& metaMd5);
     void queryAndPush(const QString& queryString);

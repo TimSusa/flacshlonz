@@ -33,6 +33,7 @@ public slots:
     void addToPlaylist(const QStringList &fileNames);
     void slotPlay();
     void slotStop();
+    void slotSetStatusInfo(const QString &info);
 
 private:
     void setTrackInfo(const QString &info);

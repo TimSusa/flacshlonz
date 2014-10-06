@@ -33,14 +33,14 @@ public:
     bool getEnableWizard()const;
 
     // GENERAL_SETTINGS -> ENABLE_DB_IMPORT_TO
-    void persistEnableDbImportTo(bool enable);
-    void setEnableDbImportTo(bool enable);
-    bool getEnableDbImportTo()const;
+//    void persistEnableDbImportTo(bool enable);
+//    void setEnableDbImportTo(bool enable);
+//    bool getEnableDbImportTo()const;
 
     // GENERAL_SETTINGS -> ENABLE_HYPNOAD
-    void persistEnableHypnoad(bool enable);
+    void persistEnableHypnotoad(bool enable);
     void setEnableHypnoad(bool enable);
-    bool getEnableHypnoad()const;
+    bool getEnableHypnotoad()const;
 
     // ALGORITHM -> ENABLE_DEEP_SCAN.
     void persistEnableDeepScan(bool enable);

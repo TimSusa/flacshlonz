@@ -12,12 +12,11 @@
 #include "FileSystemModel.hpp"
 #include <QProgressDialog>
 #include <QProgressBar>
-//#include "StatusBar.hpp"
-//#include "FlacTrack.hpp"
 #include "FlacMetaDataManager.hpp"
 #include "FileSystemManager.hpp"
-//#include "Persistence.hpp"
 #include "ConfigDialog.hpp"
+#include "StateButton.hpp"
+
 
 QT_BEGIN_NAMESPACE
 class QWidget;
@@ -26,10 +25,13 @@ class QFileInfo;
 class QDebug;
 class QTableWidget;
 class StatusBar;
-class FlacTrack;
 class Persistence;
+class Player;
 class QComboBox;
+//class StateButton;
 QT_END_NAMESPACE
+class FlacTrack;
+class States;
 
 class MainWindow : public QMainWindow
 {
@@ -38,14 +40,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow( QWidget *parent = 0 );
     ~MainWindow();
-
-    enum eMainState
-    {
-        NONE = 0,
-        IDLE,
-        DB_IMPORT,
-        FILE_SCAN
-    };
 
     QString saveState() const; // X11
     QString getSessionFileName() const; // X11
@@ -67,7 +61,7 @@ public slots:
     void slotAlbumEntryFileIncomingFound(QString id, QString albumName, QString trackName, QString audioMd5, QString metaMd5);
     void slotSearchInMusicCollectionFinished();
     void slotSearchInFileIncomingFinished();
-    void slotLoadForeignDbFinished(); // not connected not in use.
+    void slotDbImportFinished();
     void slotCopyToMusicCollection();
     void slotCopyProgress(int cnt, QString path);
     void slotCopyProgressFinished(bool wasSuccessful);
@@ -78,19 +72,22 @@ public slots:
     void slotSetItemToCollectionRootPath();
     void slotGoToLastCollectionRootPath();
     void slotCreateDirInCollection();
-    void slotRenameDirInCollection();
-    // void slotDbQueryRequested();
+    void slotRenameDirInCollection();    
     void slotRenamedDirPressedEnter();
     void slotEnableWizard(bool enable);
-    void slotEnableDbImportTo(bool enable);
+    //void slotEnableDbImportTo(bool enable);
+    void slotEnableHypnotoad(bool enable);
     void slotEnableDeepScan(bool enable);
     void slotRunSelectCollectionPathMsgBox();
-    void slotRescanButtonClicked();
+    void slotButtonUpdateViewClicked(states::eButtonState state);
+    void slotButtonCollectionViewClicked(states::eButtonState state);
     void slotSelectFromComboBox(int selection);
-    void slotLoadForeignDb();
-    void slotSaveDbAs();
+    void slotImportDbToCollection();
+    void slotImportDbToIncoming();
+    void slotExportDbAs();
 
 signals:   
+    void sigMainWindowState(states::eMainState state);
     void sigSearchInMusicCollection(QString path);
     void sigSearchInFileIncoming(QString path);
     void sigCopy(bool isFile, QString source, QString dest);
@@ -101,14 +98,16 @@ signals:
     void sigRemoveFromFileSystem(QStringList pathList);
     void sigEnableDeepScan(bool enable);
     void sigRunSelectCollectionPathMsgBox();
-    void sigStopAllSearch();
-    void sigLoadForeignDb(QString path);
+    void sigStopScans();
+    void sigImportDbToCollection(QString path);
+    void sigImportDbToIncoming(QString path);
 
 private:
     // Private methods
     void createMainGui();
     void createFileSystemManagerThread();
     void createComboBox();
+    void createUpdateCtxMenu();
     bool runMsgBoxRemoveSelection();
     bool runMsgBoxFinishedFlacSearchCollection();
     bool runMsgBoxSelectCollectionPath();
@@ -133,6 +132,8 @@ private:
     void updateFreeDiskSpace(const QString& path);
     void centerProgressDialog();
     void setUpdateTreeLabelTxt(const QString& txt);
+    void startPlayer();
+    void stopPlayer();
 
     // Membervariables
     Persistence m_Persistence;
@@ -145,6 +146,8 @@ private:
     QStringList m_CollectionPathHistory;
     QTreeView *m_pTreeUpdateView;
     QComboBox m_ComboBox;
+    StateButton *m_ButtonCollectionView;
+    StateButton *m_ButtonUpdateView;
     QStandardItemModel *m_pUpdateModel;
     QModelIndex m_UpdateTreeViewModelIdx;
     QModelIndexList m_UpdateTreeViewModelIdxList;
@@ -157,10 +160,11 @@ private:
     QMenu *m_pUpdateTreeCtxMenu;
     QLineEdit *m_LineEditCollection;
     QProgressBar m_FreeDiskSpaceCollectionBar;
+    Player *m_Player;
 
     QString m_MusicCollectionPath;
     QString m_FileIncomingPath;
-    QString m_ForeignDbPath;
+    QString m_ImportDbPath;
 
     QStringList m_CopyRequestSrcList;
     QStringList m_CopyRequestDestList;
@@ -172,8 +176,9 @@ private:
     int m_TableColoumn;
     bool m_WizzardEnabled;
     bool m_DeepScanEnabled;
-    bool m_DbImportToEnabled;
-    eMainState m_MainState;
+    //bool m_DbImportToEnabled;
+    bool m_HypnotoadEnabled;
+    states::eMainState m_MainState;
 };
 
 #endif // MAINWINDOW_HPP

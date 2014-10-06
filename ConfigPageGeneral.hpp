@@ -20,14 +20,14 @@ public:
 signals:
     void sigEnableWizard(bool enabled);
     void sigEnableLastOpenedFile(bool enabled);
-    void sigEnableDbImportTo(bool enabled);
-    void sigEnableHypnoad(bool enabled);
+   // void sigEnableDbImportTo(bool enabled);
+    void sigEnableHypnotoad(bool enabled);
 
 public slots:
     void slotEnableLastOpenedFile(bool enabled);
     void slotEnableWizard(bool enabled);
-    void slotEnableDbImportTo(bool enabled);
-    void slotEnableHypnoAd(bool enabled);
+    //void slotEnableDbImportTo(bool enabled);
+    void slotEnableHypnotoad(bool enabled);
 
 private:
     Persistence m_Persistence;

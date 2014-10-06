@@ -4,34 +4,37 @@
 
 
 
-const char* ThreadDataBaseImport::s_ForeignDbConnectionName = "ForeignConnection";
-const char* ThreadDataBaseImport::s_DefaultDbImportConnectionName = "DefaultImport";
+const char* ThreadDataBaseImport::s_ConnectionNameImportDb = "ImportConnection";
+const char* ThreadDataBaseImport::s_ConnectionNameDefaultDbImport = "DefaultImport";
 
-ThreadDataBaseImport::ThreadDataBaseImport(const QString& path,  QObject *parent):
+ThreadDataBaseImport::ThreadDataBaseImport(const QString& path, bool importToCollection,  QObject *parent):
     QThread(parent),
-    m_Path(path),
-    m_ForeignDB(QSqlDatabase::addDatabase( DataBase::s_DatabaseDriver, s_ForeignDbConnectionName )),
-    m_Db(QSqlDatabase::addDatabase( DataBase::s_DatabaseDriver, s_DefaultDbImportConnectionName )),
+    m_PathToImportDb(path),
+    m_DbImport(QSqlDatabase::addDatabase( DataBase::s_DatabaseDriver, s_ConnectionNameImportDb )),
+    m_DbDefault(QSqlDatabase::addDatabase( DataBase::s_DatabaseDriver, s_ConnectionNameDefaultDbImport )),
     m_Stopped(false),
     m_ProgressCount(0),
     m_TableNameCollection(DataBase::s_CollectionTableName),
     m_TableNameFileIncoming(DataBase::s_FileIncomingTableName),
     m_Persistence(),
-    m_EnableDbImportTo(m_Persistence.getEnableDbImportTo())
+    m_EnableDbImportToCollection(importToCollection)
 {
-    connectToForeignDB();
-    connectToDb();
+    connectToImportDBb();
+    connectToDefaultDb();
 
-    if ( m_EnableDbImportTo )
+    if ( m_EnableDbImportToCollection )
         createCollectionTable();
     else
-        createFileIncomingTable();
+        createFileIncomingTable();       
 }
 void ThreadDataBaseImport::closeDb()
 {
     qDebug() << "ThreadDataBaseImport::closeDb()";
-    if ( m_Db.isOpen()  )
-        m_Db.close();
+    if ( m_DbDefault.isOpen()  )
+        m_DbDefault.close();
+
+    if ( m_DbImport.isOpen() )
+        m_DbImport.close();
 }
 
 void ThreadDataBaseImport::closeConnection()
@@ -39,17 +42,18 @@ void ThreadDataBaseImport::closeConnection()
     qDebug() << "ThreadDataBaseImport::closeConnection";
     closeDb();
 
-    m_Db.removeDatabase(s_DefaultDbImportConnectionName);
-    m_ForeignDB.removeDatabase(s_ForeignDbConnectionName);
+    m_DbDefault.removeDatabase(s_ConnectionNameDefaultDbImport);
+    m_DbImport.removeDatabase(s_ConnectionNameImportDb);
 }
 void ThreadDataBaseImport::run()
 {
-    qDebug() << "ThreadDataBaseImport::run";
+    QString tmpStr = m_EnableDbImportToCollection ? "to Collection" : "to incoming";
+    qDebug() << "ThreadDataBaseImport::run: " << tmpStr;
     bool wasSuccessful=true;
     if (!m_Stopped)
     {
         QString queryStr ="SELECT * FROM CollectionTracks";// FROM " + path + ".SourceTable";
-        QSqlQuery qry(m_ForeignDB);
+        QSqlQuery qry(m_DbImport);
 
         // Select all.
         qry.prepare(queryStr);
@@ -80,7 +84,7 @@ void ThreadDataBaseImport::run()
                 metaMd5N = qry.value(metaMd5Col).toString();
                 //qDebug() << "found values" << trackN;
                 // insert values to own database
-                if (m_EnableDbImportTo)
+                if (m_EnableDbImportToCollection)
                 {
                     insertValueToMusicCollectionTable(QString::number(id++), albumN, trackN, audioMd5N, metaMd5N);
                 }
@@ -89,13 +93,14 @@ void ThreadDataBaseImport::run()
                     insertValueToFileIncomingTable(QString::number(id++), albumN, trackN, audioMd5N, metaMd5N);
                 }
 
-                emit sigForeignDbEntryFound(QString::number(id++), albumN, trackN, audioMd5N, metaMd5N);
+                emit sigImportDbEntryFound(QString::number(id++), albumN, trackN, audioMd5N, metaMd5N);
                 mutex.unlock();
                 //msleep(10);
             }
 
         }
-        m_ForeignDB.close();
+        m_DbImport.close();
+        m_DbDefault.close();
         //m_Db.close();
         //m_ForeignDB.removeDatabase("ForeignConnection");
         //m_Db.removeDatabase("");
@@ -119,47 +124,57 @@ void ThreadDataBaseImport::slotResetProgressCount()
     qDebug() << "ThreadDataBaseImport::slotResetProgressCount";
     m_ProgressCount=0;
 }
-
+/*
 void ThreadDataBaseImport::slotEnableDbImportTo(bool toCollection)
 {
     qDebug() << "ThreadDataBaseImport::slotEnableDbImportTo " << toCollection;
     m_EnableDbImportTo=toCollection;
 }
-
-void ThreadDataBaseImport::connectToForeignDB()
+*/
+void ThreadDataBaseImport::slotCloseDb()
 {
-    qDebug() << "ThreadDataBaseImport::connectToForeignDB";
-    if (!m_ForeignDB.isOpen())
+    closeDb();
+}
+
+void ThreadDataBaseImport::slotCloseConnection()
+{
+    closeConnection();
+}
+
+void ThreadDataBaseImport::connectToImportDBb()
+{
+    qDebug() << "ThreadDataBaseImport::connectToImportDBb";
+    if (!m_DbImport.isOpen())
     {
         //m_ForeignDB.addDatabase( "QSQLITE", "ForeignConnection" );
-        m_ForeignDB.setDatabaseName( m_Path );
-        if( !m_ForeignDB.open() )
+        m_DbImport.setDatabaseName( m_PathToImportDb );
+        if( !m_DbImport.open() )
         {
-            qDebug() << m_ForeignDB.lastError();
-            qFatal( "Failed to connect to foreign database." );
+            qDebug() << m_DbImport.lastError();
+            qFatal( "Failed to connect to import database." );
         }
         else
         {
-            qDebug( "Successfully connected to foreign database" );
+            qDebug( "Successfully connected to import database" );
         }
     }
     else
     {
-        qDebug() << "Still connected to foreign database!";
+        qDebug() << "Still connected to import database!";
     }
 }
 
-void ThreadDataBaseImport::connectToDb()
+void ThreadDataBaseImport::connectToDefaultDb()
 {
-    qDebug() << "ThreadDataBaseImport::connectToDb";
+    qDebug() << "ThreadDataBaseImport::connectToDefaultDb";
 
-    if (!m_Db.isOpen())
+    if (!m_DbDefault.isOpen())
     {
         //m_Db.addDatabase( "QSQLITE" );
-        m_Db.setDatabaseName( DataBase::s_DatabaseName );
-        if( !m_Db.open() )
+        m_DbDefault.setDatabaseName( DataBase::s_DatabaseName );
+        if( !m_DbDefault.open() )
         {
-            qDebug() << "ThreadDataBaseImport::connectToDb " << m_Db.lastError();
+            qDebug() << "ThreadDataBaseImport::connectToDb " << m_DbDefault.lastError();
             qFatal( "Failed to connect to database." );
         }
         else
@@ -180,17 +195,17 @@ void ThreadDataBaseImport::insertValueToFileIncomingTable(const QString &id, con
     Utils utl;
     QString albumName = utl.getBaseFromPath(albumPath);
 
-    if (!m_Db.isOpen())
+    if (!m_DbDefault.isOpen())
     {
         qDebug() << "try to reopen...";
-        if ( !m_Db.open() )
+        if ( !m_DbDefault.open() )
         {
             qDebug() << "ThreadDataBaseImport::insertValueToFileIncomingTable(): Database not open!";
             return;
         }
     }
 
-    QSqlQuery qry(m_Db);
+    QSqlQuery qry(m_DbDefault);
 
     // Insert Into Table.
     //qry.prepare( "INSERT INTO " + m_TableName + " (id, albumPath, fileName, audioMd5, metaMd5) VALUES ("+id+", '"+albumPath+"', '"+fileName+"', '"+audioMd5+"', '"+metaMd5+"')" );
@@ -213,17 +228,17 @@ void ThreadDataBaseImport::insertValueToMusicCollectionTable(const QString &id, 
     QString albumName = utl.getBaseFromPath(albumPath);
 
 
-    if (!m_Db.isOpen())
+    if (!m_DbDefault.isOpen())
     {
         qDebug() << "try to reopen...";
-        if ( !m_Db.open() )
+        if ( !m_DbDefault.open() )
         {
             qDebug() << "ThreadDataBaseImport::insertValueToMusicCollectionTable(): Database not open!";
             return;
         }
     }
 
-    QSqlQuery qry(m_Db);
+    QSqlQuery qry(m_DbDefault);
 
     // Insert Into Table.
     //qry.prepare( "INSERT INTO " + m_TableName + " (id, albumPath, fileName, audioMd5, metaMd5) VALUES ("+id+", '"+albumPath+"', '"+fileName+"', '"+audioMd5+"', '"+metaMd5+"')" );
@@ -242,11 +257,11 @@ void ThreadDataBaseImport::createFileIncomingTable()
 {
     qDebug() << "ThreadDataBaseImport::createFileIncomingTable...";
 
-    QSqlQuery qry(m_Db);
+    QSqlQuery qry(m_DbDefault);
 
-    if( !m_Db.open() )
+    if( !m_DbDefault.open() )
     {
-        qDebug() << m_Db.lastError();
+        qDebug() << m_DbDefault.lastError();
         qFatal( "Failed to connect." );
     }
     else
@@ -264,11 +279,11 @@ void ThreadDataBaseImport::createCollectionTable()
     qDebug() << "ThreadDataBaseImport::createTableCollection";
     //qDebug() << QSqlDatabase::drivers();
 
-    QSqlQuery qry(m_Db);
+    QSqlQuery qry(m_DbDefault);
 
-    if( !m_Db.open() )
+    if( !m_DbDefault.open() )
     {
-        qDebug()  << "ThreadDataBaseImport: " << m_Db.lastError();
+        qDebug()  << "ThreadDataBaseImport: " << m_DbDefault.lastError();
         qFatal( "Failed to connect. Database is not open!" );
     }
     else

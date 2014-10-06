@@ -14,9 +14,9 @@
 #include <iostream>
 
 FlacMetadataManager::FlacMetadataManager(const QString& path):
-   m_MetaDataValues(m_metadataKeys.size(),"")
-  ,m_Path(path)
-  ,m_isFlacValid(false)
+    m_Path(path),
+    m_isFlacValid(false),
+    m_MetaDataValues(m_metadataKeys.size(),"")
 {    
     initMetaDataHashSet();
     readMetaData();
@@ -93,6 +93,10 @@ bool FlacMetadataManager::isFlacValidByPath(const char* filepath)
         {
             ret=false;
             qDebug() << "Cannot open Flac: " << filepath;
+        }
+        else
+        {
+            ret=true;
         }
     }
     m_isFlacValid = ret;

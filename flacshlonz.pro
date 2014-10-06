@@ -20,7 +20,7 @@ CONFIG += mobility
 MOBILITY += systeminfo
 
 TEMPLATE = app
-TARGET = qtFlacSchlonz
+TARGET = FlacShlonz
 win32: DEFINES += UTF8
 win32: DEFINES -= UNICODE
 #DEFINES += FLAC__NO_DLL
@@ -53,7 +53,9 @@ HEADERS += \
     StringEncodingWin.hpp \
     MetaDataKeys.hpp \
     player/Player.hpp \
-    player/VideoWidget.hpp
+    player/VideoWidget.hpp \
+    StateButton.hpp \
+    States.hpp
 
 SOURCES += \
     main.cpp \
@@ -77,7 +79,8 @@ SOURCES += \
     MetaDataKeys.cpp \
     StringEncodingWin.cpp \
     player/Player.cpp \
-    player/VideoWidget.cpp
+    player/VideoWidget.cpp \
+    StateButton.cpp
 
 
 RESOURCES += flacshlonz.qrc
@@ -93,7 +96,7 @@ unix: LIBS += -lFLAC++
 win32: LIBS += -L"C:\\_SUSATA\\_CODING\\CPP\\flac-1.3.0\\objs\\release\\lib"
 
 
-#win32: DESTDIR += "C:\\_SUSATA\\_CODING\\CPP\\build-flacshlonz-Desktop_Qt_5_3_MSVC2010_32bit-Release"
-win32: DESTDIR += "C:\_SUSATA\_CODING\CPP\flac-1.3.0\objs\release\lib"
+win32: DESTDIR += "C:\\tmpFlacdeploy"
+#win32: DESTDIR += "C:\\_SUSATA\\_CODING\\CPP\\flac-1.3.0\\objs\\release\\lib"
 #win32: DESTDIR += "C:\\_SUSATA\\_CODING\\CPP\\build-flacshlonz-Desktop_Qt_5_2_1_MSVC2010_32bit-release\\release"
 #choose visual studio compiler build path

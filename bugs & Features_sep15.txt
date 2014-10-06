@@ -1,0 +1,16 @@
+
+Bugs:
+- zweimaliges laden einer datenbank crash flacschlonz
+- Statusbalken wird ständig aktualisiert bei der Platzanzeige
+- database file wird erst nach Neustart beim Neuscan kleiner
+
+Features:
+- "Please select path to new files or import a database" in der Ergebisliste muss zu sehen sein, bis wirklich was geladen ist
+- "Database import" sollte auch nach rumspielen mit den filtern noch angezeigt werden
+- hypnotoad video während indizierung, aktivierbar über settings (10sek im loop oder so)
+- Rescan button in "Update" umbennen
+- Update Button für "Music Collection"
+- Überschrift für mittleres Feld "Information of selected file"
+- Wenn Datenbank aus File geladen nur Anzeige von "Copy to" im Ergebniskontext-Menü, import macht ja in diesem Fall kein Sinn
+- Verzeichnisstruktur so umbauen das außer der .exe, dem Datenbankfile und der ini nix im Hauptverzeichnis ist. 
+- Anzeige von datenbank inhalt wenn Collection aus Datenbank geladen

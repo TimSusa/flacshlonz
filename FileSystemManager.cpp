@@ -22,7 +22,9 @@ FileSystemManager::FileSystemManager(QObject *parent) :
     m_pThreadRemoveFiles(),
     m_pThreadCopyFiles(),
     m_pThreadDataBaseImport(),
-    m_Db(new DataBase(this))
+    m_Db(new DataBase(this)),
+    m_MainWindowState(states::MAINSTATE_NONE),
+    m_SelfState(states::FM_NONE)
 {
 
 }
@@ -64,12 +66,19 @@ QStringList FileSystemManager::getDiffListAlbumName()
     return m_Db->getDiffList();
 }
 
+states::eFileSystemManagerState FileSystemManager::getSelfState() const
+{
+    return m_SelfState;
+}
+
 void FileSystemManager::slotSearchInMusicCollection(QString path)
 {
     qDebug() << "FileSystemManager::slotSearchInMusicCollection " << path;
-    if (NULL!=m_Db)
+
+    if ((NULL!=m_Db))
     {
-        m_Db->deleteCollectionTable();
+        if (m_Db->isOpen())
+            m_Db->deleteCollectionTable();
     }
 
 
@@ -79,9 +88,11 @@ void FileSystemManager::slotSearchInMusicCollection(QString path)
 void FileSystemManager::slotSearchInFileIncoming(QString path)
 {
     qDebug() << "FileSystemManager::slotSearchInFileIncoming " << path;
+
     if (NULL!=m_Db)
     {
-        m_Db->deleteFileIncomingTable();
+        if (m_Db->isOpen())
+            m_Db->deleteFileIncomingTable();
     }
 
     scanDirsToUpdateCollection(QDir(path));
@@ -100,7 +111,7 @@ void FileSystemManager::slotRemoveFromFileSystem(QStringList pathList)
 
 void FileSystemManager::scanDirsToMusicCollection(const QDir &dir)
 {
-
+    m_SelfState = states::FM_SCANNING_MUSIC_COLLECTION;
     destroyThreadCollectionFlacScan();
     createAndConnectThreadCollectionFlacScan(dir);
     m_pScannerMusicCollection->start(); // makes high prio sense here?
@@ -110,7 +121,7 @@ void FileSystemManager::scanDirsToMusicCollection(const QDir &dir)
 void FileSystemManager::scanDirsToUpdateCollection(const QDir &dir)
 {
 
-
+m_SelfState = states::FM_SCANNING_FILE_INCOMING;
     destroyThreadUpdateFlacScan();
     createAndConnectThreadUpdateFlacScan(dir);
     m_pScannerUpdateCollection->start();
@@ -157,17 +168,13 @@ void FileSystemManager::createAndConnectThreadRemoveFiles(const QStringList &pat
     connect(m_pThreadRemoveFiles, SIGNAL(sigRemoveRunFinished(bool)), this, SIGNAL(sigRemoveRunFinished(bool)));
 }
 
-void FileSystemManager::createAndConnectThreadDBImport(const QString &path)
+void FileSystemManager::createAndConnectThreadDBImport(const QString &path, bool importToCollection)
 {
     qDebug() << "FileSystemManager::createAndConnectThreadDBImport";
-    //m_Db->closeConnection();
-    //delete m_Db
-    m_pThreadDataBaseImport = new ThreadDataBaseImport(path);
-    connect(this, SIGNAL(sigEnableDbImportTo(bool)), m_pThreadDataBaseImport, SLOT(slotEnableDbImportTo(bool)));
+    m_pThreadDataBaseImport = new ThreadDataBaseImport(path, importToCollection);
     connect(this, SIGNAL(sigStopScanner()), m_pThreadDataBaseImport, SLOT(slotStop()));
     connect(m_pThreadDataBaseImport, SIGNAL(sigThreadFinished(bool)), this, SIGNAL(sigDataBaseImportFinished()));
-    connect(m_pThreadDataBaseImport, SIGNAL(sigForeignDbEntryFound(QString,QString,QString,QString,QString)), this, SIGNAL(sigForeignDbEntryFound(QString,QString,QString,QString,QString)));
-    //connect(m_pThreadDataBaseImport, SIGNAL(sigForeignDbEntryFound(QString,QString,QString,QString,QString)), &m_Db, SLOT(slotInsertValueToFileIncomingTable(QString,QString,QString,QString,QString)));
+    connect(m_pThreadDataBaseImport, SIGNAL(sigImportDbEntryFound(QString,QString,QString,QString,QString)), this, SIGNAL(sigImportDbEntryFound(QString,QString,QString,QString,QString)));
 }
 
 void FileSystemManager::destroyThreadCollectionFlacScan()
@@ -256,21 +263,48 @@ void FileSystemManager::destroyThreadDBImport()
 {
     if ( NULL != m_pThreadDataBaseImport )
     {
-        disconnect(this, SIGNAL(sigEnableDbImportTo(bool)), m_pThreadDataBaseImport, SLOT(slotEnableDbImportTo(bool)));
+        emit sigStopScanner();
+        emit m_pThreadDataBaseImport->slotCloseConnection();
         disconnect(this, SIGNAL(sigStopScanner()), m_pThreadDataBaseImport, SLOT(slotStop()));
         disconnect(m_pThreadDataBaseImport, SIGNAL(sigThreadFinished(bool)), this, SIGNAL(sigSearchInFileIncomingFinished()));
-        disconnect(m_pThreadDataBaseImport, SIGNAL(sigForeignDbEntryFound(QString,QString,QString,QString,QString)), this, SIGNAL(sigForeignDbEntryFound(QString,QString,QString,QString,QString)));
+        disconnect(m_pThreadDataBaseImport, SIGNAL(sigImportDbEntryFound(QString,QString,QString,QString,QString)), this, SIGNAL(sigImportDbEntryFound(QString,QString,QString,QString,QString)));
         //disconnect(m_pThreadDataBaseImport, SIGNAL(sigForeignDbEntryFound(QString,QString,QString,QString,QString)), m_Db, SLOT(slotInsertValueToFileIncomingTable(QString,QString,QString,QString,QString)));
-        if (m_pThreadDataBaseImport->isRunning())
+        /*if (m_pThreadDataBaseImport->isRunning())
         {
             qDebug() << "m_pThreadDataBaseImport is running, so we attempt to stopp and quit, before delete!";
             m_pThreadDataBaseImport->wait();
             m_pThreadDataBaseImport->quit();
         }
+        */
         qDebug() << "Deleting old m_pThreadDataBaseImport!";
-        m_pThreadDataBaseImport->closeConnection();
+        m_pThreadDataBaseImport->wait();
+        m_pThreadDataBaseImport->quit();
         delete m_pThreadDataBaseImport;
     }
+}
+
+void FileSystemManager::slotSetMainWindowState(states::eMainState state)
+{
+    m_MainWindowState=state;
+    QString tmpStr="";
+    switch(state)
+    {
+    case states::MAINSTATE_NONE:
+        tmpStr="NONE";
+        break;
+    case states::MAINSTATE_IDLE:
+        tmpStr="IDLE";
+        break;
+    case states::MAINSTATE_DB_IMPORT:
+        tmpStr="DB_IMPORT";
+        break;
+    case states::MAINSTATE_FILE_SCAN:
+        tmpStr="FILE_SCAN";
+        break;
+    default:
+        break;
+    }
+    qDebug() << "FileSystemManager::slotMainWindowState: " << tmpStr;
 }
 
 void FileSystemManager::slotCopyAllFolderTo( QStringList srcPaths, QStringList destPaths)
@@ -280,6 +314,7 @@ void FileSystemManager::slotCopyAllFolderTo( QStringList srcPaths, QStringList d
     // Recreate thread!
     destroyThreadCopyFiles();
     createAndConnectThreadCopyFiles(srcPaths, destPaths);
+    m_SelfState=states::FM_COPY;
     m_pThreadCopyFiles->start();
     qDebug() << "New Remove-Thread created and started....";
 
@@ -316,13 +351,38 @@ void FileSystemManager::slotInitOfUpdateCollectionModelFinished()
     emit sigSearchInFileIncomingFinished();
 }
 
-void FileSystemManager::slotLoadForeignDb(QString path)
+void FileSystemManager::slotImportDbToCollection(QString path)
 {
-    qDebug() << " FileSystemManager::sigLoadForeignDb " << path;
-
+    qDebug() << " FileSystemManager::slotImportDbToCollection " << path;
+    m_SelfState = states::FM_DB_IMPORT_COLLECTION;
     destroyThreadDBImport();
-    destroyThreadCollectionFlacScan();
-    destroyThreadUpdateFlacScan();
+    //    destroyThreadCollectionFlacScan();
+    //    destroyThreadUpdateFlacScan();
+
+    if (NULL!= m_Db)
+    {
+        m_Db->deleteCollectionTable();
+        m_Db->createCollectionTable();
+
+        delete m_Db;
+        m_Db = new DataBase(this);
+
+
+    }
+
+    createAndConnectThreadDBImport(path, true);
+    //emit m_pThreadDataBaseImport->slotEnableDbImportTo(true);
+    m_pThreadDataBaseImport->start();
+    //emit sigSearchInFileIncomingFinished();
+}
+
+void FileSystemManager::slotImportDbToIncoming(QString path)
+{
+    qDebug() << "FileSystemManager::slotImportDbToIncoming: " << path;
+m_SelfState = states::FM_DB_IMPORT_INCOMING;
+    destroyThreadDBImport();
+  //  destroyThreadCollectionFlacScan();
+  //  destroyThreadUpdateFlacScan();
 
     if (NULL!= m_Db)
     {
@@ -332,9 +392,11 @@ void FileSystemManager::slotLoadForeignDb(QString path)
         delete m_Db;
         m_Db = new DataBase(this);
 
+
     }
 
-    createAndConnectThreadDBImport(path);
+    createAndConnectThreadDBImport(path, false);
+    //emit m_pThreadDataBaseImport->slotEnableDbImportTo(false);
     m_pThreadDataBaseImport->start();
-    //emit sigSearchInFileIncomingFinished();
+
 }

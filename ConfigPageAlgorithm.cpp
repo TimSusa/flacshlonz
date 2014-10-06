@@ -29,7 +29,8 @@ ConfigPageAlgorithm::ConfigPageAlgorithm(QWidget *parent)
     */
 
     // Radio Buttons.
-    QButtonGroup *radioGroup = new QButtonGroup;
+    //QButtonGroup *radioGroup = new QButtonGroup;
+    /*
     QRadioButton *radioButtonDeepScan = new QRadioButton(this);
     radioButtonDeepScan->setText("Deep Scan (Compare Metadata)");
     radioButtonDeepScan->setChecked(m_Persistence.getEnableDeepScan());
@@ -42,11 +43,11 @@ ConfigPageAlgorithm::ConfigPageAlgorithm(QWidget *parent)
     QObject::connect(radioButtonQuickScan, SIGNAL(clicked(bool)), this, SLOT(slotEnableQuickScan(bool)));
     radioGroup->addButton(radioButtonQuickScan);
    // radioButtonQuickScan->hide();
-
+*/
     QVBoxLayout *algorithmLayout = new QVBoxLayout;
     //algorithmLayout->addWidget(deepScanCheckBox);
-    algorithmLayout->addWidget(radioButtonDeepScan);
-    algorithmLayout->addWidget(radioButtonQuickScan);
+  //  algorithmLayout->addWidget(radioButtonDeepScan);
+  //  algorithmLayout->addWidget(radioButtonQuickScan);
     algorithmGroup->setLayout(algorithmLayout);
     algorithmGroup->hide();
 
@@ -62,7 +63,7 @@ ConfigPageAlgorithm::ConfigPageAlgorithm(QWidget *parent)
 
 
 // Be carefull here, not to trigger an endless loop.
-void ConfigPageAlgorithm::slotEnableDeepScan(bool isChecked)
+/*void ConfigPageAlgorithm::slotEnableDeepScan(bool isChecked)
 {
     qDebug() << "ConfigPageAlgorithm::slotEnableDeepScan " << isChecked;
     m_Persistence.persistEnableDeepScan(isChecked);
@@ -86,3 +87,4 @@ void ConfigPageAlgorithm::slotEnableQuickScan(bool isChecked)
         emit slotEnableDeepScan(false);
     }
 }
+*/

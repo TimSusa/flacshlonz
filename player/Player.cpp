@@ -1,7 +1,7 @@
 #include "Player.hpp"
 #include <QMediaService>
 #include <QMediaPlaylist>
-#include <QVideoProbe>
+//#include <QVideoProbe>
 #include <QMediaMetaData>
 #include <QtWidgets>
 
@@ -20,12 +20,15 @@ Player::Player(QWidget *parent)
     connect(m_MediaPlayer, SIGNAL(bufferStatusChanged(int)), this, SLOT(bufferingProgress(int)));
     connect(m_MediaPlayer, SIGNAL(videoAvailableChanged(bool)), this, SLOT(videoAvailableChanged(bool)));
     connect(m_MediaPlayer, SIGNAL(error(QMediaPlayer::Error)), this, SLOT(displayErrorMessage()));
+
     m_VideoWidget = new VideoWidget(this);
     m_MediaPlayer->setVideoOutput(m_VideoWidget);
+    //connect(m_MediaPlayer, SIGNAL(destroyed()), this, SLOT(slotStop()));
 
     m_VideoWidget->setMinimumHeight(480);
     m_VideoWidget->setMinimumWidth(640);
 
+    //connect(m_VideoWidget, SIGNAL(destroyed(()), this, SLOT(slotStop()));
     if (!m_MediaPlayer->isAvailable()) {
         QMessageBox::warning(this, tr("Service not available"),
                              tr("The QMediaPlayer object does not have a valid service.\n"\
@@ -39,6 +42,7 @@ Player::Player(QWidget *parent)
 
 Player::~Player()
 {
+    emit this->slotStop();
 }
 
 void Player::open()
@@ -80,7 +84,13 @@ void Player::slotPlay()
 
 void Player::slotStop()
 {
+    qDebug() << "Player::slotStop";
     emit m_MediaPlayer->stop();
+}
+
+void Player::slotSetStatusInfo(const QString &info)
+{
+    setStatusInfo(info);
 }
 
 void Player::previousClicked()
@@ -109,7 +119,7 @@ void Player::seek(int seconds)
 void Player::statusChanged(QMediaPlayer::MediaStatus status)
 {
     handleCursor(status);
-
+/*
     // handle status message
     switch (status) {
     case QMediaPlayer::UnknownMediaStatus:
@@ -132,6 +142,7 @@ void Player::statusChanged(QMediaPlayer::MediaStatus status)
         displayErrorMessage();
         break;
     }
+    */
 }
 
 void Player::handleCursor(QMediaPlayer::MediaStatus status)
