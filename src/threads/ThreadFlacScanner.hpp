@@ -13,11 +13,11 @@
 #include <QString>
 #include <QDirIterator>
 #include <QDebug>
-#include "settings/Persistence.hpp"
+//#include "settings/Persistence.hpp"
 
 
 
-class ThreadFlacScanner : public QThread//, public FlacMetadataManager
+class ThreadFlacScanner : public QThread
 {
     Q_OBJECT
 
@@ -38,7 +38,7 @@ signals:
 
 private:
     QDirIterator m_Iterator;
-    Persistence m_Persistence;
+   // Persistence m_Persistence;
     bool m_Stopped;    
     bool m_DeepScanEnabled;
     bool m_ScanIsRunning;

@@ -43,8 +43,8 @@ MainWindow::MainWindow( QWidget *parent ) :
     m_FlacPathToMeta(""),
     m_CurFileInfoList(),
     m_pTreeUpdateView(),
+m_ButtonCollectionView(new StateButton()),
     m_ButtonUpdateView(new StateButton()),
-    m_ButtonCollectionView(new StateButton()),
     m_pUpdateModel(),
     m_ConfigDialog(),
     m_ProgressDialog("Please wait...", "Cancel", 0, 0, this),
@@ -63,7 +63,7 @@ MainWindow::MainWindow( QWidget *parent ) :
     m_TableRow(0),
     m_TableColoumn(0),
     m_WizzardEnabled(m_Persistence.getEnableWizard()),
-    m_DeepScanEnabled(m_Persistence.getEnableDeepScan()),
+    //m_DeepScanEnabled(m_Persistence.getEnableDeepScan()),
     //m_DbImportToEnabled(m_Persistence.getEnableDbImportTo()),
     m_HypnotoadEnabled(m_Persistence.getEnableHypnotoad()),
     m_MainState(states::MAINSTATE_IDLE)
@@ -759,8 +759,9 @@ void MainWindow::onShowDiffList(const QStringList &list)
         m_pStatusBar->setStatusBarTxt("FLAC files found.");
 
         // Take the first value and remember.
-        QStandardItem *parentItem = m_pUpdateModel->invisibleRootItem();
-        QStandardItem *item;
+        QStandardItem *parentItem = new QStandardItem;
+        parentItem = m_pUpdateModel->invisibleRootItem();
+        QStandardItem *item=new QStandardItem;
         for( QStringList::const_iterator uit = list.begin(); uit != list.end(); ++uit )
         {
             QString foundPath = (*uit);

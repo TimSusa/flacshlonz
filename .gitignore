@@ -1,1 +1,1 @@
-*.o\nmoc_*
+*.user\*.o\nmoc_*

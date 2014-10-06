@@ -1,6 +1,6 @@
 #include "StringEncodingWin.hpp"
 #include <iostream>
-#include <io.h>
+//#include <io.h>
 #include <fcntl.h>
 /*
 StringEncodingWin::StringEncodingWin()

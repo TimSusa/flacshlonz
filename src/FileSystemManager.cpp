@@ -14,7 +14,7 @@
 FileSystemManager::FileSystemManager(QObject *parent) :
     QObject(parent),
     m_Persistence(),
-    m_DeepScanEnabled(m_Persistence.getEnableDeepScan()),
+   // m_DeepScanEnabled(m_Persistence.getEnableDeepScan()),
     m_CopyProgressCount(0),
     m_RemoveProgressCount(0),
     m_pScannerMusicCollection(),

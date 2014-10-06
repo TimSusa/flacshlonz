@@ -7,11 +7,10 @@
 #include <io.h>
 #endif
 
-
+#ifdef Q_OS_WIN
 // http://stackoverflow.com/questions/1842445/how-to-convert-stdwstring-to-a-tchar
 // TCHAR* is defined to be wchar_t* if UNICODE is defined,
 // otherwise it's char*. So your code might look something like this:
-
 wchar_t* src;
 TCHAR* result;
 #ifdef UNICODE
@@ -20,6 +19,7 @@ result = src;
 //I think W2A is defined in atlbase.h, and it returns a stack-allocated var.
 //If that's not OK, look at the documenation for wcstombs.
 //result = W2A(src);
+#endif
 #endif
 
 

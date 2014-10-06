@@ -15,8 +15,8 @@
 #include <QDebug>
 #include <QSqlDatabase>
 #include <QtSql>
-#include "DataBase.hpp"
-#include "settings/Persistence.hpp"
+//#include "DataBase.hpp"
+//#include "settings/Persistence.hpp"
 
 class ThreadDataBaseImport : public QThread
 {
@@ -49,7 +49,7 @@ private:
     int m_ProgressCount;
     QString m_TableNameCollection;
     QString m_TableNameFileIncoming;
-    Persistence m_Persistence;
+   // Persistence m_Persistence;
     bool    m_EnableDbImportToCollection;
 
 

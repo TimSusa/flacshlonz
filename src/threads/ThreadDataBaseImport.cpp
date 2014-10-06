@@ -6,6 +6,7 @@
 
 #include "ThreadDataBaseImport.hpp"
 #include <QMutex>
+#include "../DataBase.hpp"
 //#include "Utils.hpp"
 
 
@@ -22,7 +23,7 @@ ThreadDataBaseImport::ThreadDataBaseImport(const QString& path, bool importToCol
     m_ProgressCount(0),
     m_TableNameCollection(DataBase::s_CollectionTableName),
     m_TableNameFileIncoming(DataBase::s_FileIncomingTableName),
-    m_Persistence(),
+  //  m_Persistence(),
     m_EnableDbImportToCollection(importToCollection)
 {
     connectToImportDBb();

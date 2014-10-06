@@ -68,7 +68,7 @@ private:
     bool    m_EnableDbImportTo;
     bool    m_EnableHypnoad;
 
-    bool    m_EnableDeepScan;
+    //bool    m_EnableDeepScan;
 };
 
 #endif // PERSISTENCE_HPP

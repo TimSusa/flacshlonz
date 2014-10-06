@@ -29,7 +29,10 @@ win32: DEFINES += UTF8
 win32: DEFINES -= UNICODE
 
 #DEPENDPATH += .
-
+INCLUDEPATH += $${PWD}\\src \
+               $${PWD}\\src\\settings \
+               $${PWD}\\src\\threads \
+               $${PWD}\\src\\player \
 
 # SOURCE FILES
 HEADERS += \
@@ -101,19 +104,18 @@ defineTest(copyToDestdir) {
         win32:FILE ~= s,/,\\,g
         win32:DDIR ~= s,/,\\,g
 
-        QMAKE_POST_LINK += $$quote(cmd /c copy /y $${FILE} $${DDIR}$$escape_expand(\\n\\t))
+        win32: QMAKE_POST_LINK += $$quote(cmd /c copy /y $${FILE} $${DDIR}$$escape_expand(\\n\\t))
+        unix: QMAKE_POST_LINK += $$quote(cp $${FILE} $${DESTDIR}$$escape_expand(\\n\\t))
     }
     export(QMAKE_POST_LINK)
 }
 
+
+
 win32 {    
     DESTDIR += "C:\\tmpFlac"
 
-    INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc \
-                   $${PWD}\\src \
-                   $${PWD}\\src\\settings \
-                   $${PWD}\\src\\threads \
-                   $${PWD}\\src\\player \
+    INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc
 
     LIBS += -llibFLAC++_dynamic -llibFLAC_dynamic
     # LIBS += -llibFLAC++ -llibFLAC
@@ -126,6 +128,8 @@ win32 {
     copyToDestdir( $${FLAC_LIB_DIR}\\*.dll $${PWD}\\src\\player\\$$quote(Hypno.mp4) )
 }
 
+#unix: DESTDIR += "/home/kxuser"
+#unix: copyToDestdir( $${PWD}\\src\\player\\$$quote(Hypno.mp4) )
 #unix {
 #    for(FILE, OTHER_FILES){
 #        QMAKE_POST_LINK += $$quote(cp $${PWD}/$${FILE} $${DESTDIR}$$escape_expand(\\n\\t))

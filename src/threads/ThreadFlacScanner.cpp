@@ -5,17 +5,17 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "ThreadFlacScanner.hpp"
-#include "FlacTrack.hpp"
+#include "../FlacTrack.hpp"
 #include <QMutex>
-#include "FlacMetaDataManager.hpp"
+#include "../FlacMetaDataManager.hpp"
 
 
 ThreadFlacScanner::ThreadFlacScanner(const QDir &dir, QObject *parent):
     QThread(parent),
     m_Iterator(dir, QDirIterator::Subdirectories),
-    m_Persistence(),
+    //m_Persistence(),
     m_Stopped(false),
-    m_DeepScanEnabled(m_Persistence.getEnableDeepScan()),
+    m_DeepScanEnabled(true),
     m_ScanIsRunning(false)
 {
 }

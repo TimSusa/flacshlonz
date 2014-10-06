@@ -13,10 +13,10 @@
 #include <QTextStream>
 #include <iostream>
 
-FlacMetadataManager::FlacMetadataManager(const QString& path):
+FlacMetadataManager::FlacMetadataManager(const QString& path):  
+    m_MetaDataValues(m_metadataKeys.size(),""),
     m_Path(path),
-    m_isFlacValid(false),
-    m_MetaDataValues(m_metadataKeys.size(),"")
+    m_isFlacValid(false)
 {    
     initMetaDataHashSet();
     readMetaData();

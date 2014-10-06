@@ -25,7 +25,7 @@ Persistence::Persistence():
     m_LastOpenFile(),
     m_EnableWizard(true),
     m_EnableDbImportTo(false),
-    m_EnableDeepScan(true),
+   // m_EnableDeepScan(true),
     m_EnableHypnoad(false)
 {
     initByPath(s_FileName);
@@ -73,16 +73,20 @@ void Persistence::initByPath(const QString& path)
 
         // Section 'ALGORITHM'
         m_Settings.beginGroup(s_SectionAlgorithm);
+        /*
         const QStringList childKeyListAlgorithm = m_Settings.childKeys();
         foreach (const QString &childKey, childKeyListAlgorithm)
         {
+
             if ( childKey == s_KeyEnableDeepScan ) // ENABLE_DEEP_SCAN
             {
                 setEnableDeepScan( m_Settings.value(childKey).value<bool>() );
             }
 
             // more keys...
+
         }
+        */
         m_Settings.endGroup();
     }
     file.close();
@@ -182,22 +186,24 @@ bool Persistence::getEnableHypnotoad()const
 }
 
 // ALGORITHM -> ENABLE_DEEP_SCAN.
+/*
 void Persistence::persistEnableDeepScan(bool enable)
 {
     qDebug() << "Persistence::persistEnableDeepScan";
     m_Settings.beginGroup(s_SectionAlgorithm);
     m_Settings.setValue(s_KeyEnableDeepScan, enable);
-    setEnableDeepScan(enable);
+    //setEnableDeepScan(enable);
     m_Settings.endGroup();
 }
 
+
 void Persistence::setEnableDeepScan(bool enable)
 {
-    m_EnableDeepScan = enable;
+    //m_EnableDeepScan = enable;
 }
 
 bool Persistence::getEnableDeepScan() const
 {
-    return m_EnableDeepScan;
+    //return m_EnableDeepScan;
 }
-
+*/
