@@ -34,12 +34,12 @@ ConfigDialog::ConfigDialog():
     connect(closeButton, SIGNAL(clicked()), this, SLOT(slotConfigDiagFinished()));
 
     // set sigs.
-    connect(m_pConfigPageAlgorithm, SIGNAL(sigEnableQuickScan(bool)), this, SIGNAL(sigEnableQuickScan(bool)));
-    connect(m_pConfigPageAlgorithm, SIGNAL(sigEnableDeepScan(bool)), this, SIGNAL(sigEnableDeepScan(bool)));
+//    connect(m_pConfigPageAlgorithm, SIGNAL(sigEnableQuickScan(bool)), this, SIGNAL(sigEnableQuickScan(bool)));
+//    connect(m_pConfigPageAlgorithm, SIGNAL(sigEnableDeepScan(bool)), this, SIGNAL(sigEnableDeepScan(bool)));
     connect(m_pConfigPageGeneral, SIGNAL(sigEnableWizard(bool)), this, SIGNAL(sigEnableWizard(bool)));
-    connect(m_pConfigPageGeneral, SIGNAL(sigEnableDbImportTo(bool)), this, SIGNAL(sigEnableDbImportTo(bool)));
+//    connect(m_pConfigPageGeneral, SIGNAL(sigEnableDbImportTo(bool)), this, SIGNAL(sigEnableDbImportTo(bool)));
     connect(m_pConfigPageGeneral, SIGNAL(sigEnableLastOpenedFile(bool)), this, SIGNAL(sigEnableLastOpenedFile(bool)));
-    connect(m_pConfigPageGeneral, SIGNAL(sigEnableHypnoad(bool)), this, SIGNAL(sigEnableHypnoad(bool)));
+    connect(m_pConfigPageGeneral, SIGNAL(sigEnableHypnotoad(bool)), this, SIGNAL(sigEnableHypnotoad(bool)));
 
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout;
