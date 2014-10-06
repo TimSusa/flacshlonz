@@ -1,3 +1,9 @@
+//////////////////////////////////////////////////////////////////////
+//!\file ThreadFlacScanner.hpp
+//!\brief Searches for flac files in a thread.
+//!\author timmsusa@googlemail.com
+//////////////////////////////////////////////////////////////////////
+
 #ifndef THREADFLACSCANNER_HPP
 #define THREADFLACSCANNER_HPP
 
@@ -7,7 +13,7 @@
 #include <QString>
 #include <QDirIterator>
 #include <QDebug>
-#include "../settings/Persistence.hpp"
+#include "settings/Persistence.hpp"
 
 
 

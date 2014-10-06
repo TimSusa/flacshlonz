@@ -1,3 +1,9 @@
+//////////////////////////////////////////////////////////////////////
+//!\file ThreadDataBaseImport.hpp
+//!\brief Connects and imports between to two databases.
+//!\author timmsusa@googlemail.com
+//////////////////////////////////////////////////////////////////////
+
 #ifndef THREADDATABASEIMPORT_HPP
 #define THREADDATABASEIMPORT_HPP
 
@@ -9,8 +15,8 @@
 #include <QDebug>
 #include <QSqlDatabase>
 #include <QtSql>
-#include "../DataBase.hpp"
-#include "../settings/Persistence.hpp"
+#include "DataBase.hpp"
+#include "settings/Persistence.hpp"
 
 class ThreadDataBaseImport : public QThread
 {

@@ -1,3 +1,9 @@
+//////////////////////////////////////////////////////////////////////
+//!\file ThreadDataBaseImport.cpp
+//!\brief Connects and imports between to two databases.
+//!\author timmsusa@googlemail.com
+//////////////////////////////////////////////////////////////////////
+
 #include "ThreadDataBaseImport.hpp"
 #include <QMutex>
 //#include "Utils.hpp"

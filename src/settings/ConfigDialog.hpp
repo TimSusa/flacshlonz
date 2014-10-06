@@ -25,10 +25,7 @@ public:
     ConfigDialog();
 
 signals:
-    //void sigEnableDeepScan(bool isChecked);
-    //void sigEnableQuickScan(bool isChecked);
     void sigEnableWizard(bool isChecked);
-    //void sigEnableDbImportTo(bool isChecked);
     void sigEnableLastOpenedFile(bool isChecked);
     void sigEnableHypnotoad(bool isChecked);
 

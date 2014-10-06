@@ -1,3 +1,9 @@
+//////////////////////////////////////////////////////////////////////
+//!\file FreeDiskStorage.cpp
+//!\brief Shows free amount of disk space on win32 and unix.
+//!\author timmsusa@googlemail.com
+//////////////////////////////////////////////////////////////////////
+
 #include "FreeDiskStorage.hpp"
 #include <QDebug>
 #include <QStringList>

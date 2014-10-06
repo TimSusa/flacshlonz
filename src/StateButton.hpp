@@ -1,3 +1,9 @@
+//////////////////////////////////////////////////////////////////////
+//!\file StateButton.hpp
+//!\brief Multi state GUI Button.
+//!\author timmsusa@googlemail.com
+//////////////////////////////////////////////////////////////////////
+
 #ifndef STATEBUTTON_HPP
 #define STATEBUTTON_HPP
 
@@ -22,8 +28,6 @@ private slots:
     void slotInternalButtonClicked(); // triggers sigButtonClicked with self state
 
 private:
-    //QPushButton m_Button;
-    QStateMachine m_StateMachine;
     states::eButtonState m_SelfState;
     void setSelfState(states::eButtonState state);
     void updateButtonTxt();

@@ -740,7 +740,7 @@ void MainWindow::onShowDiffList(const QStringList &list)
 
     if (states::MAINSTATE_DB_IMPORT == m_MainState)
     {
-    //    item = new QStandardItem(foundPath);
+        //    item = new QStandardItem(foundPath);
         m_pUpdateModel->setHorizontalHeaderLabels(QStringList("Database Import: " + Utils::getBaseFromPath(m_ImportDbPath)));
     }
     else if ( states::MAINSTATE_FILE_SCAN == m_MainState )
@@ -1884,24 +1884,27 @@ void MainWindow::startPlayer()
     qDebug() << "MainWindow::startPlayer()";
 
     // Ladies and Gentleman: The Hypnotoad!
-    if (m_HypnotoadEnabled && (NULL != m_Player))
+    if (m_HypnotoadEnabled )
     {
-        m_Player->setWindowFlags(Qt::WindowStaysOnTopHint);
-        QStringList playlist;
-        playlist << "Hypno.mp4" << "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4";
-        if ( states::MAINSTATE_DB_IMPORT == m_MainState )
-            emit m_Player->slotSetStatusInfo("Database Import...");
-        else
-            emit m_Player->slotSetStatusInfo("File Scan...");
+        if (NULL != m_Player)
+        {
+            m_Player->setWindowFlags(Qt::WindowStaysOnTopHint);
+            QStringList playlist;
+            playlist << "Hypno.mp4" << "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4" <<  "Hypno.mp4";
+            if ( states::MAINSTATE_DB_IMPORT == m_MainState )
+                emit m_Player->slotSetStatusInfo("Database Import...");
+            else
+                emit m_Player->slotSetStatusInfo("File Scan...");
 
-        emit m_Player->addToPlaylist(playlist);
-        emit m_Player->slotPlay();
-        m_Player->show();
-        connect(m_Player, SIGNAL(fullScreenChanged(bool)), this, SIGNAL(sigStopScans()));
-    }
-    else
-    {
-        qDebug() << "ERROR: MainWindow::startPlayer: player is NULL" ;
+            emit m_Player->addToPlaylist(playlist);
+            emit m_Player->slotPlay();
+            m_Player->show();
+            connect(m_Player, SIGNAL(fullScreenChanged(bool)), this, SIGNAL(sigStopScans()));
+        }
+        else
+        {
+            qDebug() << "ERROR: MainWindow::startPlayer: player is NULL" ;
+        }
     }
 }
 

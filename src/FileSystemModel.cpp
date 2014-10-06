@@ -9,7 +9,7 @@
 
 // Change file-endings to search for in file-system.
 // Note: Changes here will affect whole the application.
-const QStringList FileSystemModel::s_FileFilter = QStringList() << QString(tr( "*.flac"));
+const QStringList FileSystemModel::s_FileFilter = QStringList() << QString( "*.flac");
 
 FileSystemModel::FileSystemModel(QObject *parent) :
     QFileSystemModel(parent)

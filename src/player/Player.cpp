@@ -1,7 +1,12 @@
+//////////////////////////////////////////////////////////////////////
+//!\file Player.cpp
+//!\brief Subclassed QWidget to encapsulate all.
+//!\author timmsusa@googlemail.com
+//////////////////////////////////////////////////////////////////////
+
 #include "Player.hpp"
 #include <QMediaService>
 #include <QMediaPlaylist>
-//#include <QVideoProbe>
 #include <QMediaMetaData>
 #include <QtWidgets>
 

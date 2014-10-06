@@ -22,6 +22,10 @@
 #include "threads/ThreadDataBaseImport.hpp"
 #include "States.hpp"
 
+// This class controls all threads and does
+// important file system stuff.
+// There are a lot of connections to
+// the main window.
 class FileSystemManager : public QObject
 {
     Q_OBJECT

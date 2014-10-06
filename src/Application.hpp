@@ -5,6 +5,7 @@
 #include <QSessionManager>
 #include "MainWindow.hpp"
 
+// THIS IS USELESS!
 class Application : public QApplication
 {
     Q_OBJECT

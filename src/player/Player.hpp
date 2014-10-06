@@ -1,3 +1,9 @@
+//////////////////////////////////////////////////////////////////////
+//!\file Player.hpp
+//!\brief Subclassed QWidget to encapsulate all.
+//!\author timmsusa@googlemail.com
+//////////////////////////////////////////////////////////////////////
+
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
@@ -10,6 +16,7 @@ QT_BEGIN_NAMESPACE
 class QMediaPlayer;
 class QVideoWidget;
 QT_END_NAMESPACE
+
 
 class Player : public QWidget
 {

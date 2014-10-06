@@ -109,7 +109,11 @@ defineTest(copyToDestdir) {
 win32 {    
     DESTDIR += "C:\\tmpFlac"
 
-    INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc
+    INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc \
+                   $${PWD}\\src \
+                   $${PWD}\\src\\settings \
+                   $${PWD}\\src\\threads \
+                   $${PWD}\\src\\player \
 
     LIBS += -llibFLAC++_dynamic -llibFLAC_dynamic
     # LIBS += -llibFLAC++ -llibFLAC
