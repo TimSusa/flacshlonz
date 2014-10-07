@@ -18,8 +18,10 @@ QT +=   core \
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TEMPLATE = app
+
 TARGET = FlacShlonz
+VERSION = 1.0
+TEMPLATE = app
 
 win32: DEFINES += UTF8
 win32: DEFINES -= UNICODE
