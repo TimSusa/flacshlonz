@@ -4,9 +4,7 @@
 //!\author timmsusa@googlemail.com
 //////////////////////////////////////////////////////////////////////
 
-
 #include "MainWindow.hpp"
-
 #include <QApplication>
 #include <QSplashScreen>
 #include <QHBoxLayout>
@@ -43,7 +41,7 @@ MainWindow::MainWindow( QWidget *parent ) :
     m_FlacPathToMeta(""),
     m_CurFileInfoList(),
     m_pTreeUpdateView(),
-m_ButtonCollectionView(new StateButton()),
+    m_ButtonCollectionView(new StateButton()),
     m_ButtonUpdateView(new StateButton()),
     m_pUpdateModel(),
     m_ConfigDialog(),
@@ -146,7 +144,7 @@ void MainWindow::createMainGui()
 {
     qDebug() << "MainWindow::createMainGui";
 
-    // Create Main Window
+    // Create Main View
     setWindowTitle( QString::fromUtf8( "Flacshlonz" ) );
     QWidget *mainWidget = new QWidget(this);
     setCentralWidget(mainWidget);

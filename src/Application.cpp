@@ -10,6 +10,13 @@ Application::Application(int &argc, char **argv) :
     QApplication::setApplicationVersion("1.0");
     QApplication::setOrganizationName("SlowFutureGeneration");
     QApplication::setOrganizationDomain("SlowFutureGeneraton.tt");
+
+    // Set this to your own appcast URL, of course
+    FvUpdater::sharedUpdater()->SetFeedURL("https://raw.github.com/pypt/fervor/master/sample/Appcast.xml");
+
+    // Check for updates silently -- this will not block the initialization of
+    // your application, just start a HTTP request and return immediately.
+    FvUpdater::sharedUpdater()->CheckForUpdatesSilent();
 }
 
 // Called, when the user logs out.
