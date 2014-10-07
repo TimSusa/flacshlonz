@@ -24,11 +24,19 @@ TARGET = FlacShlonz
 win32: DEFINES += UTF8
 win32: DEFINES -= UNICODE
 
-# Fervor autoupdater
-!include("fervor/Fervor.pri") {
-    error("Unable to include Fervor autoupdater.")
+unix {
+    # Fervor autoupdater
+    !include("fervor/Fervor.pri") {
+        error("Unable to include Fervor autoupdater.")
+    }
 }
 
+win32 {
+    # Fervor autoupdater
+    !include("fervor\\Fervor.pri") {
+        error("Unable to include Fervor autoupdater.")
+    }
+}
 #DEPENDPATH += .
 
 win32: DESTDIR += $${PWD}\\bin
