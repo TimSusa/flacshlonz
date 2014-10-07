@@ -5,9 +5,9 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "ThreadFlacScanner.hpp"
-#include "../FlacTrack.hpp"
+#include "FlacTrack.hpp"
 #include <QMutex>
-#include "../FlacMetaDataManager.hpp"
+#include "FlacMetaDataManager.hpp"
 
 
 ThreadFlacScanner::ThreadFlacScanner(const QDir &dir, QObject *parent):

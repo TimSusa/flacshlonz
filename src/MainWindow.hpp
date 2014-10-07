@@ -28,7 +28,6 @@ class StatusBar;
 class Persistence;
 class Player;
 class QComboBox;
-//class StateButton;
 QT_END_NAMESPACE
 class FlacTrack;
 class States;

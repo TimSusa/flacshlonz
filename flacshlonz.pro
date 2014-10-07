@@ -30,7 +30,8 @@ win32: DEFINES -= UNICODE
 
 #DEPENDPATH += .
 
-DESTDIR += $${PWD}\\bin
+win32: DESTDIR += $${PWD}\\bin
+unix:  DESTDIR += $${PWD}/bin
 
 # SOURCE FILES
 HEADERS += \
@@ -88,9 +89,6 @@ SOURCES += \
 # RESOURCES
 RESOURCES += flacshlonz.qrc \
 
-# LIBRARIES
-unix: LIBS += -lFLAC++
-
 # Define function that copies given files to dest dir.
 defineTest(copyToDestdir) {
     files = $${1}
@@ -108,7 +106,15 @@ defineTest(copyToDestdir) {
     export(QMAKE_POST_LINK)
 }
 
+# INCLUDES & LIBRARIES
+unix {
+    INCLUDEPATH += $${PWD}/src \
+                   $${PWD}/src/settings \
+                   $${PWD}/src/threads \
+                   $${PWD}/src/player \
 
+    LIBS += -lFLAC++
+}
 
 win32 {       
     INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc
@@ -128,8 +134,7 @@ win32 {
     copyToDestdir( $${FLAC_LIB_DIR}\\*.dll $${PWD}\\src\\player\\$$quote(Hypno.mp4) )
 }
 
-#unix: DESTDIR += "/home/kxuser"
-#unix: copyToDestdir( $${PWD}\\src\\player\\$$quote(Hypno.mp4) )
+unix: copyToDestdir( $${PWD}/src/player/$$quote(Hypno.mp4) )
 #unix {
 #    for(FILE, OTHER_FILES){
 #        QMAKE_POST_LINK += $$quote(cp $${PWD}/$${FILE} $${DESTDIR}$$escape_expand(\\n\\t))

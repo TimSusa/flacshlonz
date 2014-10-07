@@ -6,7 +6,7 @@
 
 #include "ThreadDataBaseImport.hpp"
 #include <QMutex>
-#include "../DataBase.hpp"
+#include "DataBase.hpp"
 //#include "Utils.hpp"
 
 
