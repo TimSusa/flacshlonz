@@ -140,9 +140,12 @@ win32 {
     FLAC_LIB_DIR = $$quote($${PWD}\\3rdParty\\flac\\win32\\lib)
     LIBS += -L$${FLAC_LIB_DIR}
 
+    SSL_LIB_DIR = $$quote($${PWD}\\3rdParty\\ssl\\win32\\lib)
 
     # Copy flac libs + hypnovid
-    copyToDestdir( $${FLAC_LIB_DIR}\\*.dll $${PWD}\\src\\player\\$$quote(Hypno.mp4) )
+    copyToDestdir( $${FLAC_LIB_DIR}\\*.dll \
+                    $${SSL_LIB_DIR}\\*.dll \
+                    $${PWD}\\src\\player\\$$quote(Hypno.mp4) )
 }
 
 unix: copyToDestdir( $${PWD}/src/player/$$quote(Hypno.mp4) )

@@ -1,12 +1,15 @@
 #include "Application.hpp"
 #include <QMessageBox>
 #include <QDebug>
-//#include "fvupdater.h"
+#include "fvupdater.h"
 
 Application::Application(int &argc, char **argv) :
     QApplication(argc, argv)
 {
-
+    QApplication::setApplicationName("FlacShlonz");
+    QApplication::setApplicationVersion("1.0");
+    QApplication::setOrganizationName("SlowFutureGeneration");
+    QApplication::setOrganizationDomain("SlowFutureGeneraton.tt");
 }
 
 // Called, when the user logs out.

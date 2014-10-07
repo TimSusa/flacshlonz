@@ -14,12 +14,7 @@
 
 int main( int argc, char *argv[] )
 {
-    QApplication app( argc, argv );
-
-    QApplication::setApplicationName("FlacShlonz");
-    QApplication::setApplicationVersion("1.0");
-    QApplication::setOrganizationName("NoFutureGeneration");
-    QApplication::setOrganizationDomain("NoFutureGeneraton.tt");
+    Application app( argc, argv );
 
     // Set this to your own appcast URL, of course
     FvUpdater::sharedUpdater()->SetFeedURL("https://raw.github.com/pypt/fervor/master/sample/Appcast.xml");
@@ -32,7 +27,7 @@ int main( int argc, char *argv[] )
     QObject::connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
 
     MainWindow mainWin;
-    //app.setMainWindow(&mainWin);
+    app.setMainWindow(&mainWin);
     mainWin.setObjectName("MainWindow");
     mainWin.showMaximized();
 
