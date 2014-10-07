@@ -1,11 +1,7 @@
 #//////////////////////////////////////////////////////////////////////
 #//!\file flacschlonz.pro
-#//!\brief Projects file.
+#//!\brief QT Projects file.
 #//!\author timmsusa@googlemail.com
-#//!
-#//! $Author: tsusa $
-#//! $Date: 2013-05-28 15:48:51 +0200 (Tue, 28 May 2013) $
-#//! $Revision: 239220 $
 #//////////////////////////////////////////////////////////////////////
 # Requirements:
 # - FLAC 1.3
@@ -135,7 +131,3 @@ win32 {
 }
 
 unix: copyToDestdir( $${PWD}/src/player/$$quote(Hypno.mp4) )
-#unix {
-#    for(FILE, OTHER_FILES){
-#        QMAKE_POST_LINK += $$quote(cp $${PWD}/$${FILE} $${DESTDIR}$$escape_expand(\\n\\t))
-#}
