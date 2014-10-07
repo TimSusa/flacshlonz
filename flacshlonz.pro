@@ -29,10 +29,8 @@ win32: DEFINES += UTF8
 win32: DEFINES -= UNICODE
 
 #DEPENDPATH += .
-INCLUDEPATH += $${PWD}\\src \
-               $${PWD}\\src\\settings \
-               $${PWD}\\src\\threads \
-               $${PWD}\\src\\player \
+
+DESTDIR += $${PWD}\\bin
 
 # SOURCE FILES
 HEADERS += \
@@ -112,10 +110,12 @@ defineTest(copyToDestdir) {
 
 
 
-win32 {    
-    DESTDIR += "C:\\tmpFlac"
-
+win32 {       
     INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc
+    INCLUDEPATH += $${PWD}\\src \
+                   $${PWD}\\src\\settings \
+                   $${PWD}\\src\\threads \
+                   $${PWD}\\src\\player \
 
     LIBS += -llibFLAC++_dynamic -llibFLAC_dynamic
     # LIBS += -llibFLAC++ -llibFLAC
