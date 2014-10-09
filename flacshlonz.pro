@@ -128,8 +128,8 @@ unix {
 }
 
 win32 {       
-    INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc
-    INCLUDEPATH += $${PWD}\\src \
+    INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc \
+                   $${PWD}\\src \
                    $${PWD}\\src\\settings \
                    $${PWD}\\src\\threads \
                    $${PWD}\\src\\player \
@@ -140,9 +140,10 @@ win32 {
     FLAC_LIB_DIR = $$quote($${PWD}\\3rdParty\\flac\\win32\\lib)
     LIBS += -L$${FLAC_LIB_DIR}
 
+    # ssl libraries
     SSL_LIB_DIR = $$quote($${PWD}\\3rdParty\\ssl\\win32\\lib)
 
-    # Copy flac libs + hypnovid
+    # Copy flac, ssl libs + hypnovid
     copyToDestdir( $${FLAC_LIB_DIR}\\*.dll \
                     $${SSL_LIB_DIR}\\*.dll \
                     $${PWD}\\src\\player\\$$quote(Hypno.mp4) )
