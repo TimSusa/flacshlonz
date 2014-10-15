@@ -127,6 +127,13 @@ unix {
     LIBS += -lFLAC++
 }
 
+mac {
+    BREW_PREFIX = $$system(brew --prefix flac)
+    
+    INCLUDEPATH += $${BREW_PREFIX}/include
+    LIBS += -L$${BREW_PREFIX}/lib/ -lFLAC++
+}
+
 win32 {       
     INCLUDEPATH += $${PWD}\\3rdParty\\flac\\win32\\inc \
                    $${PWD}\\src \
