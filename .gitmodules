@@ -1,6 +1,6 @@
-[submodule "fervor"]
-	path = fervor
-	url = https://github.com/pypt/fervor.git
 [submodule "_fervor"]
 	path = _fervor
 	url = ../../pypt/fervor.git
+[submodule "fervor"]
+	path = fervor
+	url = https://github.com/pypt/fervor
