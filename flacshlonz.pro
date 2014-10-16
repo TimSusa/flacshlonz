@@ -41,8 +41,8 @@ win32 {
 }
 #DEPENDPATH += .
 
-win32: DESTDIR += $${PWD}\\bin
-unix:  DESTDIR += $${PWD}/bin
+win32: DESTDIR += $${PWD}\\bin\\win32
+unix:  DESTDIR += $${PWD}/bin/linux
 
 # SOURCE FILES
 HEADERS += \
