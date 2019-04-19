@@ -43,3 +43,8 @@ Mac: coming soon
 Source code: https://github.com/TimSusa/flacshlonz.git
 
 It’s a beta version, hence: Use at your own risk!
+
+## Support on Beerpay
+Hey dude! Help me out for a couple of :beers:!
+
+[![Beerpay](https://beerpay.io/TimSusa/flacshlonz/badge.svg?style=beer-square)](https://beerpay.io/TimSusa/flacshlonz)  [![Beerpay](https://beerpay.io/TimSusa/flacshlonz/make-wish.svg?style=flat-square)](https://beerpay.io/TimSusa/flacshlonz?focus=wish)
